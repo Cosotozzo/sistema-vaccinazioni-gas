@@ -4,287 +4,756 @@
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- CDN Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- CDN Toastify per notifiche -->
+
+  <!-- Toastify CDN per Notifiche -->
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   
   <style>
-    /* Ottimizzazioni per Tablet e Touch */
-    input, button { min-height: 56px; font-size: 1.15rem; }
+    /* Ottimizzazione target touch per Tablet 10" (min. 48px/56px) */
+    input, button, select { min-height: 52px; font-size: 1.1rem; }
+    .btn-touch { min-height: 56px; display: inline-flex; align-items: center; justify-content: center; }
     
-    /* Sfondo medico con overlay per massimo contrasto */
     .bg-medical {
-      background-image: linear-gradient(rgba(240, 249, 255, 0.88), rgba(224, 242, 254, 0.95)), url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=2000');
+      background-image: linear-gradient(rgba(240, 249, 255, 0.93), rgba(224, 242, 254, 0.96)), url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=2000');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
     }
 
-    /* Animazione personalizzata per i pulsanti */
-    .btn-animated {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .btn-animated:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.4);
-    }
-    .btn-animated:active {
-      transform: translateY(1px) scale(0.97);
-      box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
-    }
+    canvas { touch-action: none; }
   </style>
 </head>
 <body class="bg-medical text-slate-800 font-sans antialiased selection:bg-sky-200">
 
   <!-- ======================================================== -->
-  <!-- MODULO DI AUTENTICAZIONE -->
+  <!-- MODULO AUTENTICAZIONE -->
   <!-- ======================================================== -->
-  <div id="auth-module" class="min-h-screen flex items-center justify-center p-6">
-    <!-- Card Principale -->
-    <div class="bg-white/95 backdrop-blur-sm p-10 rounded-3xl shadow-2xl w-full max-w-xl border border-sky-100">
+  <div id="auth-module" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-xl border border-sky-100">
       
-      <div class="text-center mb-10">
-        <!-- Icona stilizzata (Croce medica / Salute) -->
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-sky-100 text-sky-600 mb-4 shadow-inner">
-          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 mb-3 shadow-inner">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
         </div>
-        <h1 class="text-3xl font-extrabold text-sky-900 tracking-tight mb-2">Sistema Vaccinale</h1>
-        <p class="text-sky-600 font-medium text-lg">Area Riservata Operatori</p>
+        <h1 class="text-3xl font-black text-sky-950">Sistema Vaccinale</h1>
+        <p class="text-sky-600 font-semibold">Studio Medico Dott.ssa Arianna Baroni</p>
       </div>
 
-      <!-- SEZIONE LOGIN -->
-      <div id="login-section">
-        <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-bold mb-2 text-slate-700 uppercase tracking-wider">Email</label>
-            <input type="email" id="login-email" class="w-full px-5 border-2 border-sky-100 rounded-2xl focus:ring-4 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all bg-sky-50/50">
+      <!-- LOGIN -->
+      <div id="login-section" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Email</label>
+          <input type="email" id="login-email" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Password</label>
+          <input type="password" id="login-password" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+        </div>
+        <button onclick="handleLogin()" id="btn-login" class="btn-touch w-full bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl text-lg shadow-lg shadow-sky-600/30">
+          Accedi al Sistema
+        </button>
+        <div class="mt-6 flex justify-between text-sm font-semibold">
+          <button onclick="toggleAuthSection('recover-section')" class="text-sky-600 hover:text-sky-800">Password dimenticata?</button>
+          <button onclick="toggleAuthSection('register-section')" class="text-sky-600 hover:text-sky-800">Nuova Utenza</button>
+        </div>
+      </div>
+
+      <!-- REGISTRAZIONE -->
+      <div id="register-section" class="hidden space-y-4">
+        <h2 class="text-xl font-bold text-sky-900 border-b border-sky-100 pb-2">Nuova Utenza Operatore</h2>
+        <div class="flex gap-3">
+          <div class="w-1/2">
+            <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Nome</label>
+            <input type="text" id="reg-nome" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
           </div>
-          <div>
-            <label class="block text-sm font-bold mb-2 text-slate-700 uppercase tracking-wider">Password</label>
-            <input type="password" id="login-password" class="w-full px-5 border-2 border-sky-100 rounded-2xl focus:ring-4 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all bg-sky-50/50">
+          <div class="w-1/2">
+            <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Cognome</label>
+            <input type="text" id="reg-cognome" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
           </div>
-          <button onclick="handleLogin()" id="btn-login" class="btn-animated w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold rounded-2xl text-xl mt-4">
-            Accedi al Sistema
-          </button>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Email</label>
+          <input type="email" id="reg-email" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Password</label>
+          <input type="password" id="reg-password" oninput="checkPasswordRules()" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Conferma Password</label>
+          <input type="password" id="reg-confirm-password" oninput="checkPasswordRules()" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+        </div>
+
+        <!-- CHECKLIST SICUREZZA PASSWORD -->
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-2">
+          <p class="font-bold text-slate-700 uppercase mb-1">Requisiti Sicurezza Password:</p>
+          <div id="rule-length" class="flex items-center text-slate-400">
+            <span class="icon mr-2 font-bold">❌</span> Almeno 8 caratteri minimi
+          </div>
+          <div id="rule-special" class="flex items-center text-slate-400">
+            <span class="icon mr-2 font-bold">❌</span> Almeno 1 carattere speciale (!@#$%^&*...)
+          </div>
+          <div id="rule-numbers" class="flex items-center text-slate-400">
+            <span class="icon mr-2 font-bold">❌</span> Almeno 2 numeri
+          </div>
+          <div id="rule-match" class="flex items-center text-slate-400">
+            <span class="icon mr-2 font-bold">❌</span> Le password coincidono perfettamente
+          </div>
         </div>
         
-        <div class="mt-10 flex flex-col sm:flex-row justify-between text-base font-semibold gap-4">
-          <button onclick="toggleSection('recover-section')" class="text-sky-600 hover:text-sky-800 transition-colors p-2 text-left">Password dimenticata?</button>
-          <button onclick="toggleSection('register-section')" class="text-sky-600 hover:text-sky-800 transition-colors p-2 text-left sm:text-right">Nuova Utenza</button>
-        </div>
+        <button onclick="handleRegister()" id="btn-register" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-lg shadow-lg shadow-emerald-600/20">
+          Registra e Attiva Account
+        </button>
+        <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium">Torna al Login</button>
       </div>
 
-      <!-- SEZIONE REGISTRAZIONE -->
-      <div id="register-section" class="hidden">
-        <h2 class="text-2xl font-bold mb-6 text-sky-900 border-b-2 border-sky-100 pb-2">Registra Account</h2>
-        <div class="space-y-5">
-          <div class="flex gap-4">
-            <div class="w-1/2">
-              <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Nome</label>
-              <input type="text" id="reg-nome" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
-            </div>
-            <div class="w-1/2">
-              <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Cognome</label>
-              <input type="text" id="reg-cognome" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Email</label>
-            <input type="email" id="reg-email" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
-          </div>
-          <div>
-            <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Password</label>
-            <input type="text" id="reg-password" placeholder="Min. 8 car., 1 numero, 1 car. speciale" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
-            <p class="text-xs text-slate-400 mt-2 ml-2">Es: Vaccino_24!</p>
-          </div>
-          
-          <button onclick="handleRegister()" id="btn-register" class="btn-animated w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl text-lg mt-6">
-            Registra e Continua
-          </button>
-          <button onclick="toggleSection('login-section')" class="w-full text-slate-500 hover:text-slate-800 p-3 rounded-xl mt-2 font-medium transition-colors">Torna al Login</button>
+      <!-- RECUPERO -->
+      <div id="recover-section" class="hidden space-y-4">
+        <h2 class="text-xl font-bold text-sky-900 border-b border-sky-100 pb-2">Ripristino Password</h2>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-700 uppercase">Email registrata</label>
+          <input type="email" id="recover-email" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
         </div>
-      </div>
-
-      <!-- SEZIONE RECUPERO -->
-      <div id="recover-section" class="hidden">
-        <h2 class="text-2xl font-bold mb-6 text-sky-900 border-b-2 border-sky-100 pb-2">Ripristino Password</h2>
-        <p class="text-slate-600 mb-6 text-sm">Inserisci l'email associata al tuo account. Ti invieremo una password temporanea sicura.</p>
-        <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-bold mb-2 text-slate-700 uppercase">Email</label>
-            <input type="email" id="recover-email" class="w-full px-5 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
-          </div>
-          <button onclick="handleRecover()" id="btn-recover" class="btn-animated w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg">
-            Invia Email di Reset
-          </button>
-          <button onclick="toggleSection('login-section')" class="w-full text-slate-500 hover:text-slate-800 p-3 rounded-xl mt-2 font-medium transition-colors">Annulla e Torna al Login</button>
-        </div>
+        <button onclick="handleRecover()" id="btn-recover" class="btn-touch w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-lg shadow-lg shadow-amber-500/20">
+          Invia Password Temporanea
+        </button>
+        <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium">Annulla</button>
       </div>
 
     </div>
   </div>
 
   <!-- ======================================================== -->
-  <!-- LA TUA APP ORIGINALE (Nascosta) -->
+  <!-- DASHBOARD WIZARD A SCHERMATE (TABLET 10") -->
   <!-- ======================================================== -->
-  <div id="main-app" class="hidden w-full min-h-screen flex flex-col bg-slate-50">
-    <div class="bg-gradient-to-r from-sky-800 to-blue-900 text-white shadow-lg p-5 flex justify-between items-center shrink-0">
-      <div class="font-bold text-2xl tracking-wide flex items-center gap-3">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        Consensi Vaccinali
-      </div>
-      <div class="flex items-center gap-6">
-        <span id="user-display-name" class="hidden md:inline-block text-sky-100 font-medium text-lg"></span>
-        <button onclick="logout()" class="btn-animated bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl font-bold transition-all backdrop-blur-sm">Disconnetti</button>
-      </div>
-    </div>
+  <div id="main-app" class="hidden w-full min-h-screen flex flex-col bg-slate-100">
     
-    <div class="p-6 flex-grow overflow-auto">
-      <!-- INCOLLA QUI IL CODICE HTML DELLA TUA WEB APP ORIGINALE -->
+    <!-- Top Bar -->
+    <div class="bg-sky-950 text-white shadow-md px-6 py-4 flex justify-between items-center shrink-0">
+      <div class="font-bold text-xl flex items-center gap-3">
+        <span class="p-2 bg-sky-800 rounded-xl">💉</span>
+        <span>Modulo Consenso Vaccinazione</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="user-display-name" class="hidden sm:inline font-medium text-sky-200"></span>
+        <button onclick="logout()" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-bold">Disconnetti</button>
+      </div>
+    </div>
+
+    <!-- Stepper Indicator -->
+    <div class="bg-white border-b border-slate-200 px-4 py-3 shrink-0 shadow-sm">
+      <div class="max-w-4xl mx-auto flex justify-between items-center text-xs sm:text-sm font-bold">
+        <div id="step-indicator-1" class="step-node flex items-center gap-2 text-sky-600">
+          <span class="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center font-black">1</span>
+          <span class="hidden sm:inline">Paziente</span>
+        </div>
+        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+        <div id="step-indicator-2" class="step-node flex items-center gap-2 text-slate-400">
+          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">2</span>
+          <span class="hidden sm:inline">Vaccino</span>
+        </div>
+        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+        <div id="step-indicator-3" class="step-node flex items-center gap-2 text-slate-400">
+          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">3</span>
+          <span class="hidden sm:inline">Consenso</span>
+        </div>
+        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+        <div id="step-indicator-4" class="step-node flex items-center gap-2 text-slate-400">
+          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">4</span>
+          <span class="hidden sm:inline">Biometria</span>
+        </div>
+        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+        <div id="step-indicator-5" class="step-node flex items-center gap-2 text-slate-400">
+          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">5</span>
+          <span class="hidden sm:inline">Conferma</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenuto Wizard -->
+    <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-grow flex flex-col justify-between">
+      
+      <!-- SCREEN 1: PAZIENTE -->
+      <div id="wizard-screen-1" class="wizard-screen bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+        <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 1: Selezione Paziente</h2>
+        
+        <div class="relative mb-6">
+          <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Cerca Anagrafica Paziente</label>
+          <input type="text" id="patient-search-input" oninput="onPatientSearchInput(this.value)" placeholder="Digita Cognome, Nome o Codice Fiscale..." class="w-full px-5 border-2 border-sky-200 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/30">
+          <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-100"></div>
+        </div>
+
+        <div id="selected-patient-card" class="hidden p-5 bg-sky-50 border-2 border-sky-200 rounded-2xl">
+          <div class="flex justify-between items-center mb-3">
+            <span class="bg-sky-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase">Paziente Selezionato</span>
+            <button onclick="clearPatientSelection()" class="text-xs text-rose-600 font-bold hover:underline">Cambia Paziente</button>
+          </div>
+          <h3 id="patient-card-name" class="text-2xl font-black text-slate-800 mb-3"></h3>
+          <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
+            <div><strong>Codice Fiscale:</strong> <span id="patient-card-cf"></span></div>
+            <div><strong>Data Nascita:</strong> <span id="patient-card-dob"></span></div>
+            <div><strong>Sesso:</strong> <span id="patient-card-sex"></span></div>
+            <div><strong>Telefono:</strong> <span id="patient-card-phone"></span></div>
+            <div class="col-span-2"><strong>Indirizzo:</strong> <span id="patient-card-address"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: VACCINO -->
+      <div id="wizard-screen-2" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+        <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 2: Dettagli Somministrazione Vaccino</h2>
+        
+        <div class="space-y-5">
+          <div>
+            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Seleziona Vaccino Disponibile</label>
+            <select id="vaccine-select" onchange="onVaccineSelected()" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none bg-white font-medium">
+              <option value="">Caricamento vaccini in corso...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Numero Lotto</label>
+            <input type="text" id="vaccine-lotto" readonly class="w-full px-4 border-2 border-slate-100 rounded-2xl bg-slate-100 text-slate-700 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Luogo di Somministrazione</label>
+            <input type="text" id="vaccine-location" value="STUDIO/AMBULATORIO" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-medium">
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: CONSENSO VACCINALE -->
+      <div id="wizard-screen-3" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+        <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Dichiarazione e Consenso Vaccinale</h2>
+        
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
+          <p class="font-bold text-slate-900">Il/La sottoscritto/a dichiara di:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>Aver ricevuto e letto la scheda informativa sintetica antinfluenzale;</li>
+            <li>Essere stato/a informato/a su benefici e rischi della vaccinazione;</li>
+            <li>Aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
+            <li>Aver compreso le informazioni e di prestare il proprio consenso.</li>
+          </ul>
+        </div>
+
+        <div class="mb-4">
+          <label class="flex items-center gap-3 cursor-pointer p-3 bg-sky-50 rounded-2xl border border-sky-200">
+            <input type="checkbox" id="check-consenso-vaccino" checked class="w-6 h-6 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
+            <span class="font-bold text-sky-950 text-sm">ACCONSENTE AD ESSERE SOTTOPOSTO/A ALLA VACCINAZIONE</span>
+          </label>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="font-bold text-sm text-slate-800">Firma 1 Paziente (Consenso Vaccinale)</label>
+            <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci Firma</button>
+          </div>
+          <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
+            <canvas id="canvas-patient-vaccino" width="600" height="180" class="w-full h-44 bg-white cursor-crosshair"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: BIOMETRIA & PRIVACY -->
+      <div id="wizard-screen-4" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+        <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 4: Consenso Dati Biometrici e GDPR</h2>
+        
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
+          <p class="font-bold text-slate-900">Informativa Trattamento Dati (Regolamento UE 2016/679):</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>I dati sanitari saranno trattati esclusivamente per la prestazione sanitaria.</li>
+            <li>Verranno raccolti dati biometrici al solo scopo di garantire la validità legale della firma elettronica.</li>
+          </ul>
+        </div>
+
+        <div class="mb-4">
+          <label class="flex items-center gap-3 cursor-pointer p-3 bg-sky-50 rounded-2xl border border-sky-200">
+            <input type="checkbox" id="check-consenso-privacy" checked class="w-6 h-6 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
+            <span class="font-bold text-sky-950 text-sm">ACCONSENTE al trattamento dei dati personali e biometrici</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-bold text-xs text-slate-800">Firma 2 Paziente (Biometria)</label>
+              <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+            </div>
+            <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
+              <canvas id="canvas-patient-biometrico" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-bold text-xs text-slate-800">Firma Operatore Sanitario</label>
+              <button onclick="clearCanvas('canvas-doctor')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+            </div>
+            <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
+              <canvas id="canvas-doctor" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 5: CONFERMA -->
+      <div id="wizard-screen-5" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+        <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 5: Riepilogo Finale e Generazione PDF</h2>
+        
+        <div id="summary-content" class="bg-sky-50/60 border border-sky-200 p-5 rounded-2xl space-y-3 text-sm mb-6"></div>
+
+        <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xl shadow-xl shadow-emerald-600/30">
+          Registra Consenso e Genera PDF
+        </button>
+      </div>
+
+      <!-- Controlli Navigazione Wizard -->
+      <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
+        <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl hidden">
+          ← Indietro
+        </button>
+        <div class="flex-grow"></div>
+        <button id="btn-next-step" onclick="changeStep(1)" class="btn-touch px-8 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl shadow-lg shadow-sky-600/20">
+          Avanti →
+        </button>
+      </div>
+
     </div>
   </div>
 
+  <!-- JavaScript Client Application Logic -->
   <script>
-    // Notifiche UI
+    // State Management
+    let currentStep = 1;
+    let selectedPatient = null;
+    let availableVaccines = [];
+    let searchDebounce = null;
+    const canvasStates = { 'canvas-patient-vaccino': false, 'canvas-patient-biometrico': false, 'canvas-doctor': false };
+
+    // Promise Wrapper per Comunicazione Client-Server Asincrona
+    function runServerFunction(functionName, ...args) {
+      return new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)[functionName](...args);
+      });
+    }
+
+    // Feedback Notifiche Toast
     function showToast(text, type = 'success') {
-      let bgColor = type === 'error' ? "linear-gradient(to right, #f43f5e, #e11d48)" : "linear-gradient(to right, #0ea5e9, #0284c7)";
+      const bgColor = type === 'error' ? "linear-gradient(to right, #f43f5e, #e11d48)" : "linear-gradient(to right, #0ea5e9, #0284c7)";
       Toastify({
         text: text,
         duration: 4000,
         gravity: "bottom",
         position: "center",
-        style: {
-          background: bgColor,
-          borderRadius: "16px",
-          padding: "18px 28px",
-          fontSize: "1.15rem",
-          fontWeight: "600",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
-        }
+        style: { background: bgColor, borderRadius: "16px", padding: "16px 24px", fontSize: "1.1rem", fontWeight: "600" }
       }).showToast();
     }
 
-    function toggleSection(sectionId) {
+    function toggleAuthSection(sectionId) {
       ['login-section', 'recover-section', 'register-section'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
       document.getElementById(sectionId).classList.remove('hidden');
     }
 
-    // Validazione Password lato Front-end
-    function validatePassword(password) {
-      const minLength = password.length >= 8;
-      const hasNumber = /\d/.test(password);
-      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password);
-      return minLength && hasNumber && hasSpecial;
+    // Controlli Sicurezza Password Client-Side
+    function checkPasswordRules() {
+      const pass = document.getElementById('reg-password').value;
+      const confirmPass = document.getElementById('reg-confirm-password').value;
+
+      const isLongEnough = pass.length >= 8;
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(pass);
+      const numbersCount = (pass.match(/\d/g) || []).length;
+      const hasTwoNumbers = numbersCount >= 2;
+      const matches = pass.length > 0 && pass === confirmPass;
+
+      updateRuleDisplay('rule-length', isLongEnough);
+      updateRuleDisplay('rule-special', hasSpecial);
+      updateRuleDisplay('rule-numbers', hasTwoNumbers);
+      updateRuleDisplay('rule-match', matches);
+
+      return isLongEnough && hasSpecial && hasTwoNumbers && matches;
     }
 
-    // LOGIN
-    function handleLogin() {
+    function updateRuleDisplay(elementId, isValid) {
+      const el = document.getElementById(elementId);
+      const icon = el.querySelector('.icon');
+      if (isValid) {
+        el.className = "flex items-center text-emerald-600 font-bold";
+        icon.innerText = "✓";
+      } else {
+        el.className = "flex items-center text-slate-400";
+        icon.innerText = "❌";
+      }
+    }
+
+    // Autenticazione Client
+    async function handleLogin() {
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-password').value;
       const btn = document.getElementById('btn-login');
       
       if(!email || !pass) return showToast("Inserisci email e password", "error");
       
-      btn.innerText = "Verifica credenziali...";
-      btn.classList.add("opacity-75", "cursor-wait");
+      btn.innerText = "Verifica in corso...";
+      btn.disabled = true;
 
-      google.script.run
-        .withSuccessHandler(function(response) {
-          btn.innerText = "Accedi al Sistema";
-          btn.classList.remove("opacity-75", "cursor-wait");
-          
-          if(response.success) {
-            showToast("Benvenuto/a, " + response.name);
-            document.getElementById('auth-module').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display-name').innerText = response.name;
-            document.getElementById('login-password').value = "";
-          } else {
-            showToast(response.message, "error");
-          }
-        })
-        .withFailureHandler(function(err) {
-          btn.innerText = "Accedi al Sistema";
-          btn.classList.remove("opacity-75", "cursor-wait");
-          showToast("Errore di rete. Riprova.", "error");
-        })
-        .checkLogin(email, pass);
+      try {
+        const response = await runServerFunction('checkLogin', email, pass);
+        btn.innerText = "Accedi al Sistema";
+        btn.disabled = false;
+        
+        if (response.success) {
+          showToast(`Benvenuto/a, ${response.name}`);
+          document.getElementById('auth-module').classList.add('hidden');
+          document.getElementById('main-app').classList.remove('hidden');
+          document.getElementById('user-display-name').innerText = response.name;
+          initDashboard();
+        } else {
+          showToast(response.message, "error");
+        }
+      } catch (err) {
+        btn.innerText = "Accedi al Sistema";
+        btn.disabled = false;
+        showToast("Errore di rete o connessione", "error");
+      }
     }
 
-    // REGISTRAZIONE
-    function handleRegister() {
+    async function handleRegister() {
       const nome = document.getElementById('reg-nome').value.trim();
       const cognome = document.getElementById('reg-cognome').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const pass = document.getElementById('reg-password').value;
+      const confirmPass = document.getElementById('reg-confirm-password').value;
       const btn = document.getElementById('btn-register');
 
-      if(!nome || !cognome || !email || !pass) return showToast("Compila tutti i campi", "error");
-      
-      // Controllo sicurezza password lato client prima di inviare
-      if(!validatePassword(pass)) {
-        return showToast("La password deve contenere almeno 8 caratteri, un numero e un carattere speciale.", "error");
+      if (!nome || !cognome || !email || !pass || !confirmPass) return showToast("Compila tutti i campi", "error");
+      if (!checkPasswordRules()) return showToast("La password non rispetta i requisiti", "error");
+
+      btn.innerText = "Registrazione in corso...";
+      btn.disabled = true;
+
+      try {
+        const res = await runServerFunction('registerUser', nome, cognome, email, pass, confirmPass);
+        btn.innerText = "Registra e Attiva Account";
+        btn.disabled = false;
+        if (res.success) {
+          showToast(res.message);
+          toggleAuthSection('login-section');
+          document.getElementById('login-email').value = email;
+        } else {
+          showToast(res.message, "error");
+        }
+      } catch (err) {
+        btn.innerText = "Registra e Attiva Account";
+        btn.disabled = false;
+        showToast("Errore durante la registrazione", "error");
       }
-
-      btn.innerText = "Creazione in corso...";
-      btn.classList.add("opacity-75", "cursor-wait");
-
-      google.script.run
-        .withSuccessHandler(function(response) {
-          btn.innerText = "Registra e Continua";
-          btn.classList.remove("opacity-75", "cursor-wait");
-          if(response.success) {
-            showToast(response.message);
-            toggleSection('login-section');
-            document.getElementById('login-email').value = email;
-            // Pulisci campi
-            document.getElementById('reg-nome').value = "";
-            document.getElementById('reg-cognome').value = "";
-            document.getElementById('reg-email').value = "";
-            document.getElementById('reg-password').value = "";
-          } else {
-            showToast(response.message, "error");
-          }
-        })
-        .registerUser(nome, cognome, email, pass);
     }
 
-    // RECUPERO PASSWORD (Genera e invia reset temporaneo)
-    function handleRecover() {
+    async function handleRecover() {
       const email = document.getElementById('recover-email').value.trim();
       const btn = document.getElementById('btn-recover');
+      if (!email) return showToast("Inserisci la tua email", "error");
 
-      if(!email) return showToast("Inserisci la tua email", "error");
+      btn.innerText = "Invio in corso...";
+      btn.disabled = true;
 
-      btn.innerText = "Elaborazione in corso...";
-      btn.classList.add("opacity-75", "cursor-wait");
-
-      google.script.run
-        .withSuccessHandler(function(response) {
-          btn.innerText = "Invia Email di Reset";
-          btn.classList.remove("opacity-75", "cursor-wait");
-          if(response.success) {
-            showToast(response.message);
-            toggleSection('login-section');
-            document.getElementById('recover-email').value = "";
-          } else {
-            showToast(response.message, "error");
-          }
-        })
-        .recoverPassword(email);
+      try {
+        const res = await runServerFunction('recoverPassword', email);
+        btn.innerText = "Invia Password Temporanea";
+        btn.disabled = false;
+        if (res.success) {
+          showToast(res.message);
+          toggleAuthSection('login-section');
+        } else {
+          showToast(res.message, "error");
+        }
+      } catch (err) {
+        btn.innerText = "Invia Password Temporanea";
+        btn.disabled = false;
+        showToast("Errore durante la richiesta", "error");
+      }
     }
 
-    // LOGOUT
     function logout() {
       document.getElementById('main-app').classList.add('hidden');
       document.getElementById('auth-module').classList.remove('hidden');
-      showToast("Disconnessione avvenuta con successo");
-      google.script.run.logAction(document.getElementById('user-display-name').innerText, 'Logout effettuato');
+      showToast("Disconnessione effettuata");
+    }
+
+    // Gestione Wizard
+    function initDashboard() {
+      loadVaccines();
+      setupCanvasPad('canvas-patient-vaccino');
+      setupCanvasPad('canvas-patient-biometrico');
+      setupCanvasPad('canvas-doctor');
+      updateStepUI();
+    }
+
+    function changeStep(delta) {
+      if (delta === 1 && !validateCurrentStep()) return;
+
+      currentStep += delta;
+      if (currentStep < 1) currentStep = 1;
+      if (currentStep > 5) currentStep = 5;
+
+      updateStepUI();
+    }
+
+    function validateCurrentStep() {
+      if (currentStep === 1 && !selectedPatient) {
+        showToast("Seleziona un paziente prima di continuare", "error");
+        return false;
+      }
+      if (currentStep === 2) {
+        const vSelect = document.getElementById('vaccine-select').value;
+        if (vSelect === "") {
+          showToast("Seleziona un vaccino disponibile", "error");
+          return false;
+        }
+      }
+      if (currentStep === 3) {
+        if (!canvasStates['canvas-patient-vaccino']) {
+          showToast("Manca la firma del paziente per il consenso vaccinale", "error");
+          return false;
+        }
+      }
+      if (currentStep === 4) {
+        if (!canvasStates['canvas-patient-biometrico']) {
+          showToast("Manca la firma del paziente per i dati biometrici", "error");
+          return false;
+        }
+        if (!canvasStates['canvas-doctor']) {
+          showToast("Manca la firma dell'operatore sanitario", "error");
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function updateStepUI() {
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`wizard-screen-${i}`).classList.add('hidden');
+        
+        const node = document.getElementById(`step-indicator-${i}`);
+        const badge = node.querySelector('span');
+        if (i < currentStep) {
+          node.className = "step-node flex items-center gap-2 text-emerald-600";
+          badge.className = "w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black";
+        } else if (i === currentStep) {
+          node.className = "step-node flex items-center gap-2 text-sky-600";
+          badge.className = "w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center font-black";
+        } else {
+          node.className = "step-node flex items-center gap-2 text-slate-400";
+          badge.className = "w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black";
+        }
+      }
+
+      document.getElementById(`wizard-screen-${currentStep}`).classList.remove('hidden');
+
+      document.getElementById('btn-prev-step').classList.toggle('hidden', currentStep === 1);
+      document.getElementById('btn-next-step').classList.toggle('hidden', currentStep === 5);
+
+      if (currentStep === 5) renderSummary();
+    }
+
+    function renderSummary() {
+      const vIdx = document.getElementById('vaccine-select').value;
+      const vData = availableVaccines[vIdx] || {};
+
+      const html = `
+        <div class="font-bold text-base text-sky-900 border-b border-sky-200 pb-2 mb-2">Riepilogo Scheda Vaccinale</div>
+        <p><strong>Paziente:</strong> ${selectedPatient.cognome} ${selectedPatient.nome} (CF: ${selectedPatient.codicefiscale})</p>
+        <p><strong>Vaccino:</strong> ${vData.denominazione || ''} | <strong>Lotto:</strong> ${vData.lotto || ''}</p>
+        <p><strong>Luogo:</strong> ${document.getElementById('vaccine-location').value}</p>
+        <p><strong>Consenso Vaccinazione:</strong> ${document.getElementById('check-consenso-vaccino').checked ? '✓ ACCONSENTE' : '❌ NON ACCONSENTE'}</p>
+        <p><strong>Consenso Dati Biometrici:</strong> ${document.getElementById('check-consenso-privacy').checked ? '✓ ACCONSENTE' : '❌ NON ACCONSENTE'}</p>
+        <p><strong>Firme Collegate:</strong> 3 su 3 Presenti e Valide</p>
+      `;
+      document.getElementById('summary-content').innerHTML = html;
+    }
+
+    // Ricerca Autocomplete
+    function onPatientSearchInput(query) {
+      clearTimeout(searchDebounce);
+      const dropdown = document.getElementById('search-suggestions');
+      if (!query || query.trim().length < 3) return dropdown.classList.add('hidden');
+
+      searchDebounce = setTimeout(async () => {
+        try {
+          const results = await runServerFunction('getPatientSuggestions', query);
+          dropdown.innerHTML = "";
+          if (!results || results.length === 0) {
+            dropdown.innerHTML = `<div class="p-4 text-slate-400 text-sm italic">Nessun paziente trovato</div>`;
+          } else {
+            results.forEach(p => {
+              const item = document.createElement('div');
+              item.className = "p-4 hover:bg-sky-50 cursor-pointer transition-colors";
+              item.innerHTML = `<div class="font-bold text-slate-800">${p.cognome || ''} ${p.nome || ''}</div><div class="text-xs text-slate-500">CF: ${p.codicefiscale || ''}</div>`;
+              item.onclick = () => selectPatient(p);
+              dropdown.appendChild(item);
+            });
+          }
+          dropdown.classList.remove('hidden');
+        } catch (err) {
+          console.error(err);
+        }
+      }, 300);
+    }
+
+    function selectPatient(p) {
+      selectedPatient = p;
+      document.getElementById('search-suggestions').classList.add('hidden');
+      document.getElementById('patient-search-input').value = "";
+
+      document.getElementById('patient-card-name').innerText = `${p.cognome || ''} ${p.nome || ''}`;
+      document.getElementById('patient-card-cf').innerText = p.codicefiscale || '-';
+      document.getElementById('patient-card-dob').innerText = p.datanascita || '-';
+      document.getElementById('patient-card-sex').innerText = p.sesso || '-';
+      document.getElementById('patient-card-phone').innerText = p.telefono || '-';
+      document.getElementById('patient-card-address').innerText = `${p.indirizzo || ''} ${p.comuneresidenza || ''}`;
+      
+      document.getElementById('selected-patient-card').classList.remove('hidden');
+      showToast("Paziente selezionato");
+    }
+
+    function clearPatientSelection() {
+      selectedPatient = null;
+      document.getElementById('selected-patient-card').classList.add('hidden');
+    }
+
+    // Caricamento Vaccini
+    async function loadVaccines() {
+      try {
+        availableVaccines = await runServerFunction('getVaccineData') || [];
+        const select = document.getElementById('vaccine-select');
+        select.innerHTML = '<option value="">-- Seleziona Vaccino --</option>';
+        availableVaccines.forEach((v, idx) => {
+          select.innerHTML += `<option value="${idx}">${v.denominazione} (Lotto: ${v.lotto})</option>`;
+        });
+      } catch (err) {
+        showToast("Errore durante il caricamento dei vaccini", "error");
+      }
+    }
+
+    function onVaccineSelected() {
+      const idx = document.getElementById('vaccine-select').value;
+      document.getElementById('vaccine-lotto').value = (idx !== "" && availableVaccines[idx]) ? availableVaccines[idx].lotto : "";
+    }
+
+    // Canvas Touch Pad
+    function setupCanvasPad(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      let isDrawing = false;
+
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#0f172a';
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      function startDraw(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        canvasStates[canvasId] = true;
+      }
+
+      function stopDraw() { isDrawing = false; }
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      
+      canvas.addEventListener('touchstart', startDraw, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDraw);
+    }
+
+    function clearCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasStates[canvasId] = false;
+    }
+
+    // Invio Form Finale
+    async function submitConsent() {
+      const vSelect = document.getElementById('vaccine-select').value;
+      const vData = availableVaccines[vSelect];
+
+      const btn = document.getElementById('btn-submit-consent');
+      btn.innerText = "Salvataggio e generazione PDF in corso...";
+      btn.disabled = true;
+
+      const formData = {
+        cognome: selectedPatient.cognome,
+        nome: selectedPatient.nome,
+        codicefiscale: selectedPatient.codicefiscale,
+        datanascita: selectedPatient.datanascita,
+        sesso: selectedPatient.sesso,
+        ssr: selectedPatient.ssr,
+        residenza: selectedPatient.residenza,
+        indirizzo: selectedPatient.indirizzo,
+        comuneresidenza: selectedPatient.comuneresidenza,
+        telefono: selectedPatient.telefono,
+        vaccinoDenominazione: vData.denominazione,
+        vaccinoLotto: vData.lotto,
+        luogoVaccinazione: document.getElementById('vaccine-location').value,
+        consensoVaccino: document.getElementById('check-consenso-vaccino').checked ? 'Acconsente' : 'Non acconsente',
+        consensoPrivacy: document.getElementById('check-consenso-privacy').checked ? 'Acconsente' : 'Non acconsente',
+        firmaPazienteVaccino: document.getElementById('canvas-patient-vaccino').toDataURL('image/png'),
+        firmaPazienteBiometrico: document.getElementById('canvas-patient-biometrico').toDataURL('image/png'),
+        firmaMedico: document.getElementById('canvas-doctor').toDataURL('image/png')
+      };
+
+      try {
+        const res = await runServerFunction('submitConsentForm', formData);
+        btn.innerText = "Registra Consenso e Genera PDF";
+        btn.disabled = false;
+
+        if (res.status === 'success') {
+          showToast("Consenso registrato e PDF salvato con successo!");
+          
+          // Reset Wizard
+          clearPatientSelection();
+          clearCanvas('canvas-patient-vaccino');
+          clearCanvas('canvas-patient-biometrico');
+          clearCanvas('canvas-doctor');
+          currentStep = 1;
+          updateStepUI();
+          loadVaccines();
+        } else {
+          showToast(`Errore: ${res.message}`, "error");
+        }
+      } catch (err) {
+        btn.innerText = "Registra Consenso e Genera PDF";
+        btn.disabled = false;
+        showToast("Errore di salvataggio del consenso", "error");
+      }
     }
   </script>
 </body>
