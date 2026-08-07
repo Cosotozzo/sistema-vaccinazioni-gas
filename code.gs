@@ -310,3 +310,105 @@ function createPdfHtml(data) {
   
   return html;
 }
+
+// ==========================================
+// MODULO AUTENTICAZIONE E LOGGING (SICUREZZA AVANZATA)
+// ==========================================
+
+function getDb() {
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
+// Funzione per criptare la password (SHA-256)
+function hashPassword(password) {
+  var rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password);
+  var txtHash = '';
+  for (var i = 0; i < rawHash.length; i++) {
+    var hashVal = rawHash[i];
+    if (hashVal < 0) { hashVal += 256; }
+    if (hashVal.toString(16).length == 1) { txtHash += '0'; }
+    txtHash += hashVal.toString(16);
+  }
+  return txtHash;
+}
+
+// Validazione backend della password (sicurezza extra)
+function validatePasswordRules(password) {
+  var hasNumber = /\d/.test(password);
+  var hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password);
+  var isLongEnough = password.length >= 8;
+  return hasNumber && hasSpecial && isLongEnough;
+}
+
+function registerUser(nome, cognome, email, password) {
+  if (!validatePasswordRules(password)) {
+    return { success: false, message: 'La password non rispetta i requisiti di sicurezza.' };
+  }
+
+  var sheet = getDb().getSheetByName('Account');
+  var data = sheet.getDataRange().getValues();
+  
+  // Verifica email duplicata
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2] === email) { // Colonna C è indice 2
+      return { success: false, message: 'Questa email è già registrata.' };
+    }
+  }
+  
+  var hashedPass = hashPassword(password);
+  sheet.appendRow([nome, cognome, email, hashedPass]);
+  logAction(nome + ' ' + cognome, 'Creazione nuovo account');
+  
+  return { success: true, message: 'Account creato con successo!' };
+}
+
+function checkLogin(email, password) {
+  var sheet = getDb().getSheetByName('Account');
+  var data = sheet.getDataRange().getValues();
+  var inputHash = hashPassword(password);
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2] === email && data[i][3] === inputHash) { 
+      var fullName = data[i][0] + " " + data[i][1];
+      logAction(fullName, 'Login effettuato');
+      return { success: true, name: fullName };
+    }
+  }
+  return { success: false, message: 'Credenziali errate o account inesistente.' };
+}
+
+function recoverPassword(email) {
+  var sheet = getDb().getSheetByName('Account');
+  var data = sheet.getDataRange().getValues();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2] === email) {
+      var fullName = data[i][0] + " " + data[i][1];
+      
+      // Genera password temporanea: 8 caratteri casuali + 1 numero + 1 carattere speciale
+      var tempPass = Math.random().toString(36).slice(-8) + "1!"; 
+      var tempHash = hashPassword(tempPass);
+      
+      // Aggiorna il database con la nuova password (Riga i+1 perché gli indici array partono da 0)
+      sheet.getRange(i + 1, 4).setValue(tempHash);
+      
+      var subject = "Ripristino Accesso - Studio Medico";
+      var body = "Gentile " + fullName + ",\n\nÈ stato richiesto un reset della password per il tuo account.\n\nLa tua nuova password temporanea è: " + tempPass + "\n\nTi consigliamo di accedere e conservarla con cura.\n\nSaluti,\nAmministrazione Sistema Vaccinale";
+      
+      GmailApp.sendEmail(email, subject, body);
+      logAction(fullName, 'Reset password via email');
+      return { success: true, message: 'Password temporanea inviata via email.' };
+    }
+  }
+  return { success: false, message: 'Email non trovata nel database.' };
+}
+
+function logAction(user, action) {
+  var sheet = getDb().getSheetByName('Log');
+  if(!sheet) {
+    sheet = getDb().insertSheet('Log');
+    sheet.appendRow(['Data', 'Ora', 'Utente', 'Azione']);
+  }
+  var now = new Date();
+  sheet.appendRow([now.toLocaleDateString('it-IT'), now.toLocaleTimeString('it-IT'), user, action]);
+}

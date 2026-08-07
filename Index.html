@@ -2,404 +2,290 @@
 <html>
 <head>
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Modulo Consenso Vaccinazione</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+  <!-- CDN Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- CDN Toastify per notifiche -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   
   <style>
-    /* CSS PENSATO PER LA MASSIMA COMPATIBILITÀ */
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 10px;
-      background-color: #f0f2f5;
-      color: #333;
-      -webkit-text-size-adjust: 100%; /* Previene l'ingrandimento del testo su iOS */
-    }
-    .container {
-      max-width: 800px;
-      margin: 10px auto;
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      color: #1d4ed8; text-align: center; margin-bottom: 20px; font-size: 24px;
-    }
-    h2 {
-      color: #333; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-top: 0; font-size: 20px;
+    /* Ottimizzazioni per Tablet e Touch */
+    input, button { min-height: 56px; font-size: 1.15rem; }
+    
+    /* Sfondo medico con overlay per massimo contrasto */
+    .bg-medical {
+      background-image: linear-gradient(rgba(240, 249, 255, 0.88), rgba(224, 242, 254, 0.95)), url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=2000');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
 
-    /* Sistema a Sezioni (Wizard) */
-    .form-section { display: none; animation: fadeIn 0.4s; }
-    .form-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    /* Controlli di Navigazione */
-    .navigation-buttons { display: flex; justify-content: space-between; margin-top: 25px; }
-    .btn {
-      padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px;
-      cursor: pointer; font-weight: bold; transition: background-color 0.2s; -webkit-appearance: none;
+    /* Animazione personalizzata per i pulsanti */
+    .btn-animated {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-primary { background-color: #2563eb; color: white; }
-    .btn-primary:hover { background-color: #1d4ed8; }
-    .btn-primary:disabled { background-color: #93c5fd; cursor: not-allowed; }
-    .btn-secondary { background-color: #e2e8f0; color: #333; }
-    .btn-secondary:hover { background-color: #cbd5e1; }
-    .btn[style*="display: none"] { display: none !important; }
-
-    /* Stili per i campi del form */
-    .form-group { margin-bottom: 18px; }
-    .form-group label { display: block; font-weight: bold; margin-bottom: 6px; color: #4a5568; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;
-      box-sizing: border-box; font-size: 16px; -webkit-appearance: none;
+    .btn-animated:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.4);
     }
-    .form-group input:read-only { background-color: #f1f5f9; color: #64748b; }
-
-    /* Ricerca Paziente */
-    #search-container { position: relative; }
-    #suggestions {
-      position: absolute; width: 100%; border: 1px solid #ddd; background: white;
-      z-index: 100; max-height: 200px; overflow-y: auto; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    .btn-animated:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
     }
-    #suggestions div { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
-    #suggestions div:hover { background-color: #f0f2f5; }
-
-    /* Firme */
-    .signature-pad { position: relative; width: 100%; height: 150px; }
-    .signature-pad canvas { border: 1px dashed #cbd5e1; border-radius: 4px; width: 100%; height: 150px; }
-    .clear-btn {
-      position: absolute; top: 5px; right: 5px; font-size: 12px; padding: 4px 8px;
-      background-color: #f87171; color: white; border: none; border-radius: 4px; cursor: pointer;
-    }
-
-    /* Overlay di caricamento */
-    #loader {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);
-      display: none; justify-content: center; align-items: center; z-index: 999;
-    }
-    #loader p { color: white; font-size: 20px; }
   </style>
 </head>
-<body>
-  
-  <div id="loader"><p>Caricamento...</p></div>
+<body class="bg-medical text-slate-800 font-sans antialiased selection:bg-sky-200">
 
-  <div class="container">
-    <h1 id="main-title">Consenso Vaccinazione</h1>
-
-    <form id="consent-form">
-      <div id="step1" class="form-section active">
-        <h2>1. Dati Paziente</h2>
-        <div class="form-group" id="search-container">
-          <label for="search">Cerca Paziente</label>
-          <input type="text" id="search" placeholder="Cognome, Nome o Codice Fiscale...">
-          <div id="suggestions"></div>
+  <!-- ======================================================== -->
+  <!-- MODULO DI AUTENTICAZIONE -->
+  <!-- ======================================================== -->
+  <div id="auth-module" class="min-h-screen flex items-center justify-center p-6">
+    <!-- Card Principale -->
+    <div class="bg-white/95 backdrop-blur-sm p-10 rounded-3xl shadow-2xl w-full max-w-xl border border-sky-100">
+      
+      <div class="text-center mb-10">
+        <!-- Icona stilizzata (Croce medica / Salute) -->
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-sky-100 text-sky-600 mb-4 shadow-inner">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
         </div>
-        <div class="form-group">
-          <label>Cognome</label><input type="text" id="cognome" readonly>
-        </div>
-        <div class="form-group">
-          <label>Nome</label><input type="text" id="nome" readonly>
-        </div>
-        <div class="form-group">
-          <label>Codice Fiscale</label><input type="text" id="codicefiscale" readonly>
-        </div>
-        <div class="form-group">
-          <label>Data di Nascita</label><input type="text" id="datanascita" readonly>
-        </div>
+        <h1 class="text-3xl font-extrabold text-sky-900 tracking-tight mb-2">Sistema Vaccinale</h1>
+        <p class="text-sky-600 font-medium text-lg">Area Riservata Operatori</p>
       </div>
 
-      <div id="step2" class="form-section">
-        <h2>2. Dati Vaccinazione</h2>
-        <div class="form-group">
-          <label for="vaccino">Vaccino e Lotto</label>
-          <select id="vaccino"></select>
-        </div>
-        <div class="form-group">
-          <label for="luogoVaccinazione">Luogo Vaccinazione</label>
-          <input type="text" id="luogoVaccinazione" value="Studio Medico Dott.ssa Baroni">
-        </div>
-      </div>
-
-      <div id="step3" class="form-section">
-        <h2>3. Consenso Informato</h2>
-        <div class="form-group">
-            <p>Dichiaro di aver ricevuto e compreso le informazioni sui benefici e rischi della vaccinazione.</p>
-            <label><input type="radio" name="consenso" value="Acconsente" checked> <strong>Acconsento</strong> alla somministrazione</label><br>
-            <label><input type="radio" name="consenso" value="Non Acconsente"> <strong>Non acconsento</strong> alla somministrazione</label>
-        </div>
-        <hr>
-        <div class="form-group">
-            <p>Dichiaro di aver ricevuto l'informativa sulla privacy (GDPR) per il trattamento dei dati personali e biometrici (firma).</p>
-            <label><input type="radio" name="privacy" value="Acconsente" checked> <strong>Acconsento</strong> al trattamento dei dati</label><br>
-            <label><input type="radio" name="privacy" value="Non Acconsente"> <strong>Non acconsento</strong> al trattamento dei dati</label>
-        </div>
-      </div>
-
-      <div id="step4" class="form-section">
-        <h2>4. Firme</h2>
-        <div class="form-group">
-          <label>Firma del Paziente</label>
-          <div class="signature-pad">
-            <canvas id="firmaPazienteCanvas"></canvas>
-            <button type="button" class="clear-btn" onclick="signaturePads.paziente.clear()">Pulisci</button>
+      <!-- SEZIONE LOGIN -->
+      <div id="login-section">
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-bold mb-2 text-slate-700 uppercase tracking-wider">Email</label>
+            <input type="email" id="login-email" class="w-full px-5 border-2 border-sky-100 rounded-2xl focus:ring-4 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all bg-sky-50/50">
           </div>
-        </div>
-        <div class="form-group">
-          <label>Firma dell'Operatore Sanitario</label>
-          <div class="signature-pad">
-            <canvas id="firmaMedicoCanvas"></canvas>
-            <button type="button" class="clear-btn" onclick="signaturePads.medico.clear()">Pulisci</button>
+          <div>
+            <label class="block text-sm font-bold mb-2 text-slate-700 uppercase tracking-wider">Password</label>
+            <input type="password" id="login-password" class="w-full px-5 border-2 border-sky-100 rounded-2xl focus:ring-4 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all bg-sky-50/50">
           </div>
+          <button onclick="handleLogin()" id="btn-login" class="btn-animated w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold rounded-2xl text-xl mt-4">
+            Accedi al Sistema
+          </button>
+        </div>
+        
+        <div class="mt-10 flex flex-col sm:flex-row justify-between text-base font-semibold gap-4">
+          <button onclick="toggleSection('recover-section')" class="text-sky-600 hover:text-sky-800 transition-colors p-2 text-left">Password dimenticata?</button>
+          <button onclick="toggleSection('register-section')" class="text-sky-600 hover:text-sky-800 transition-colors p-2 text-left sm:text-right">Nuova Utenza</button>
         </div>
       </div>
-    </form>
-    
-    <div class="navigation-buttons">
-      <button id="prevBtn" class="btn btn-secondary" onclick="navigateStep(-1)">Indietro</button>
-      <button id="nextBtn" class="btn btn-primary" onclick="navigateStep(1)">Avanti</button>
+
+      <!-- SEZIONE REGISTRAZIONE -->
+      <div id="register-section" class="hidden">
+        <h2 class="text-2xl font-bold mb-6 text-sky-900 border-b-2 border-sky-100 pb-2">Registra Account</h2>
+        <div class="space-y-5">
+          <div class="flex gap-4">
+            <div class="w-1/2">
+              <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Nome</label>
+              <input type="text" id="reg-nome" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+            </div>
+            <div class="w-1/2">
+              <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Cognome</label>
+              <input type="text" id="reg-cognome" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Email</label>
+            <input type="email" id="reg-email" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Password</label>
+            <input type="text" id="reg-password" placeholder="Min. 8 car., 1 numero, 1 car. speciale" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+            <p class="text-xs text-slate-400 mt-2 ml-2">Es: Vaccino_24!</p>
+          </div>
+          
+          <button onclick="handleRegister()" id="btn-register" class="btn-animated w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl text-lg mt-6">
+            Registra e Continua
+          </button>
+          <button onclick="toggleSection('login-section')" class="w-full text-slate-500 hover:text-slate-800 p-3 rounded-xl mt-2 font-medium transition-colors">Torna al Login</button>
+        </div>
+      </div>
+
+      <!-- SEZIONE RECUPERO -->
+      <div id="recover-section" class="hidden">
+        <h2 class="text-2xl font-bold mb-6 text-sky-900 border-b-2 border-sky-100 pb-2">Ripristino Password</h2>
+        <p class="text-slate-600 mb-6 text-sm">Inserisci l'email associata al tuo account. Ti invieremo una password temporanea sicura.</p>
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-bold mb-2 text-slate-700 uppercase">Email</label>
+            <input type="email" id="recover-email" class="w-full px-5 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+          </div>
+          <button onclick="handleRecover()" id="btn-recover" class="btn-animated w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg">
+            Invia Email di Reset
+          </button>
+          <button onclick="toggleSection('login-section')" class="w-full text-slate-500 hover:text-slate-800 p-3 rounded-xl mt-2 font-medium transition-colors">Annulla e Torna al Login</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
-<script>
-  // JAVASCRIPT IN SINTASSI ES5 PER VECCHI BROWSER
-  var currentStep = 1;
-  var totalSteps = 4;
-  var selectedPatient = null;
-  var signaturePads = { paziente: null, medico: null };
-
-  // Funzione per mostrare/nascondere il loader
-  function showLoader(show) {
-    var loader = document.getElementById('loader');
-    loader.style.display = show ? 'flex' : 'none';
-  }
-
-  // Esegui allo script al caricamento della pagina
-  window.onload = function() {
-    showStep(currentStep);
-    initializeSignaturePads();
-    loadVaccineData();
+  <!-- ======================================================== -->
+  <!-- LA TUA APP ORIGINALE (Nascosta) -->
+  <!-- ======================================================== -->
+  <div id="main-app" class="hidden w-full min-h-screen flex flex-col bg-slate-50">
+    <div class="bg-gradient-to-r from-sky-800 to-blue-900 text-white shadow-lg p-5 flex justify-between items-center shrink-0">
+      <div class="font-bold text-2xl tracking-wide flex items-center gap-3">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        Consensi Vaccinali
+      </div>
+      <div class="flex items-center gap-6">
+        <span id="user-display-name" class="hidden md:inline-block text-sky-100 font-medium text-lg"></span>
+        <button onclick="logout()" class="btn-animated bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl font-bold transition-all backdrop-blur-sm">Disconnetti</button>
+      </div>
+    </div>
     
-    var searchInput = document.getElementById('search');
-    searchInput.addEventListener('keyup', handleSearch);
-  };
-  
-  // Inizializza i canvas per le firme
-  function initializeSignaturePads() {
-    var canvasPaziente = document.getElementById('firmaPazienteCanvas');
-    var canvasMedico = document.getElementById('firmaMedicoCanvas');
-    
-    // Funzione per ridimensionare il canvas
-    function resizeCanvas(canvas) {
-        var ratio =  Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
+    <div class="p-6 flex-grow overflow-auto">
+      <!-- INCOLLA QUI IL CODICE HTML DELLA TUA WEB APP ORIGINALE -->
+    </div>
+  </div>
+
+  <script>
+    // Notifiche UI
+    function showToast(text, type = 'success') {
+      let bgColor = type === 'error' ? "linear-gradient(to right, #f43f5e, #e11d48)" : "linear-gradient(to right, #0ea5e9, #0284c7)";
+      Toastify({
+        text: text,
+        duration: 4000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+          background: bgColor,
+          borderRadius: "16px",
+          padding: "18px 28px",
+          fontSize: "1.15rem",
+          fontWeight: "600",
+          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+        }
+      }).showToast();
     }
 
-    resizeCanvas(canvasPaziente);
-    resizeCanvas(canvasMedico);
-
-    signaturePads.paziente = new SignaturePad(canvasPaziente, { backgroundColor: 'rgb(255, 255, 255)' });
-    signaturePads.medico = new SignaturePad(canvasMedico, { backgroundColor: 'rgb(255, 255, 255)' });
-  }
-
-  // Carica i vaccini disponibili dal backend
-  function loadVaccineData() {
-    showLoader(true);
-    google.script.run
-      .withSuccessHandler(function(vaccines) {
-        var select = document.getElementById('vaccino');
-        select.innerHTML = '';
-        vaccines.forEach(function(v) {
-          var option = document.createElement('option');
-          option.value = JSON.stringify({ denominazione: v.denominazione, lotto: v.lotto });
-          option.textContent = v.denominazione + ' (Lotto: ' + v.lotto + ')';
-          select.appendChild(option);
-        });
-        showLoader(false);
-      })
-      .withFailureHandler(function(err) {
-        showLoader(false);
-        alert('Errore nel caricamento dei vaccini: ' + err.message);
-      })
-      .getVaccineData();
-  }
-
-  // Gestione della ricerca paziente (con debounce)
-  var searchTimeout;
-  function handleSearch(event) {
-    clearTimeout(searchTimeout);
-    var searchTerm = event.target.value;
-    if (searchTerm.length < 3) {
-      document.getElementById('suggestions').innerHTML = '';
-      return;
+    function toggleSection(sectionId) {
+      ['login-section', 'recover-section', 'register-section'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(sectionId).classList.remove('hidden');
     }
-    searchTimeout = setTimeout(function() {
-      showLoader(true);
+
+    // Validazione Password lato Front-end
+    function validatePassword(password) {
+      const minLength = password.length >= 8;
+      const hasNumber = /\d/.test(password);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password);
+      return minLength && hasNumber && hasSpecial;
+    }
+
+    // LOGIN
+    function handleLogin() {
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-login');
+      
+      if(!email || !pass) return showToast("Inserisci email e password", "error");
+      
+      btn.innerText = "Verifica credenziali...";
+      btn.classList.add("opacity-75", "cursor-wait");
+
       google.script.run
-        .withSuccessHandler(displaySuggestions)
-        .getPatientSuggestions(searchTerm);
-    }, 400); // Attende 400ms prima di avviare la ricerca
-  }
-
-  // Mostra i suggerimenti di ricerca
-  function displaySuggestions(patients) {
-    showLoader(false);
-    var suggestionsContainer = document.getElementById('suggestions');
-    suggestionsContainer.innerHTML = '';
-    if (patients.length === 0) {
-        suggestionsContainer.innerHTML = "<div>Nessun paziente trovato</div>";
-        return;
-    }
-    patients.forEach(function(p) {
-      var div = document.createElement('div');
-      div.textContent = p.cognome + ' ' + p.nome + ' (' + p.codicefiscale + ')';
-      div.onclick = function() { selectPatient(p); };
-      suggestionsContainer.appendChild(div);
-    });
-  }
-
-  // Popola il form quando un paziente viene selezionato
-  function selectPatient(patient) {
-    selectedPatient = patient;
-    document.getElementById('cognome').value = patient.cognome || '';
-    document.getElementById('nome').value = patient.nome || '';
-    document.getElementById('codicefiscale').value = patient.codicefiscale || '';
-    
-    // Formatta la data se presente
-    var dataNascita = '';
-    if (patient.datanascita) {
-        try {
-            dataNascita = new Date(patient.datanascita).toLocaleDateString('it-IT');
-        } catch(e) {
-            dataNascita = patient.datanascita; // Lascia il formato originale se non è una data valida
-        }
-    }
-    document.getElementById('datanascita').value = dataNascita;
-    
-    document.getElementById('search').value = patient.cognome + ' ' + patient.nome;
-    document.getElementById('suggestions').innerHTML = '';
-  }
-
-  // Mostra la sezione corretta del form
-  function showStep(stepNumber) {
-    var sections = document.getElementsByClassName('form-section');
-    for (var i = 0; i < sections.length; i++) {
-      sections[i].classList.remove('active');
-    }
-    document.getElementById('step' + stepNumber).classList.add('active');
-
-    var prevButton = document.getElementById('prevBtn');
-    var nextButton = document.getElementById('nextBtn');
-    
-    prevButton.style.display = (stepNumber === 1) ? 'none' : 'inline-block';
-    nextButton.innerHTML = (stepNumber === totalSteps) ? 'Salva Consenso' : 'Avanti';
-  }
-
-  // Funzione per la navigazione tra step
-  function navigateStep(direction) {
-    // Validazione prima di procedere
-    if (direction > 0 && !validateStep(currentStep)) {
-        return;
-    }
-      
-    if (currentStep === totalSteps && direction === 1) {
-      submitForm();
-      return;
-    }
-
-    var newStep = currentStep + direction;
-    if (newStep > 0 && newStep <= totalSteps) {
-      currentStep = newStep;
-      showStep(currentStep);
-    }
-  }
-  
-  // Validazione di ogni step
-  function validateStep(step) {
-      if (step === 1) {
-          if (!selectedPatient) {
-              alert('Per favore, cerca e seleziona un paziente.');
-              return false;
+        .withSuccessHandler(function(response) {
+          btn.innerText = "Accedi al Sistema";
+          btn.classList.remove("opacity-75", "cursor-wait");
+          
+          if(response.success) {
+            showToast("Benvenuto/a, " + response.name);
+            document.getElementById('auth-module').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('user-display-name').innerText = response.name;
+            document.getElementById('login-password').value = "";
+          } else {
+            showToast(response.message, "error");
           }
-      }
-      if (step === 4) { // Validazione firme prima di salvare
-          if (signaturePads.paziente.isEmpty() || signaturePads.medico.isEmpty()) {
-              alert('Entrambe le firme sono obbligatorie.');
-              return false;
-          }
-      }
-      return true;
-  }
+        })
+        .withFailureHandler(function(err) {
+          btn.innerText = "Accedi al Sistema";
+          btn.classList.remove("opacity-75", "cursor-wait");
+          showToast("Errore di rete. Riprova.", "error");
+        })
+        .checkLogin(email, pass);
+    }
 
-  // Invia i dati del form al backend
-  function submitForm() {
-    if (!validateStep(4)) return; // Validazione finale
+    // REGISTRAZIONE
+    function handleRegister() {
+      const nome = document.getElementById('reg-nome').value.trim();
+      const cognome = document.getElementById('reg-cognome').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-password').value;
+      const btn = document.getElementById('btn-register');
+
+      if(!nome || !cognome || !email || !pass) return showToast("Compila tutti i campi", "error");
       
-    showLoader(true);
-    var nextButton = document.getElementById('nextBtn');
-    nextButton.disabled = true;
-    nextButton.innerHTML = 'Salvataggio...';
+      // Controllo sicurezza password lato client prima di inviare
+      if(!validatePassword(pass)) {
+        return showToast("La password deve contenere almeno 8 caratteri, un numero e un carattere speciale.", "error");
+      }
 
-    var selectedVaccino = JSON.parse(document.getElementById('vaccino').value);
+      btn.innerText = "Creazione in corso...";
+      btn.classList.add("opacity-75", "cursor-wait");
 
-    // Crea l'oggetto con i dati del form
-    var formData = {
-      cognome: selectedPatient.cognome,
-      nome: selectedPatient.nome,
-      codicefiscale: selectedPatient.codicefiscale,
-      datanascita: selectedPatient.datanascita,
-      sesso: selectedPatient.sesso || '',
-      ssr: selectedPatient.ssr || '',
-      residenza: selectedPatient.residenza || '',
-      indirizzo: selectedPatient.indirizzo || '',
-      comuneresidenza: selectedPatient.comuneresidenza || '',
-      telefono: selectedPatient.telefono || '',
-      vaccinoDenominazione: selectedVaccino.denominazione,
-      vaccinoLotto: selectedVaccino.lotto,
-      luogoVaccinazione: document.getElementById('luogoVaccinazione').value,
-      consenso: document.querySelector('input[name="consenso"]:checked').value,
-      privacy: document.querySelector('input[name="privacy"]:checked').value,
-      firmaPaziente: signaturePads.paziente.toDataURL(),
-      firmaMedico: signaturePads.medico.toDataURL()
-    };
-    
-    google.script.run
-      .withSuccessHandler(function(response) {
-        showLoader(false);
-        nextButton.disabled = false;
-        if (response.status === 'success') {
-            alert('Consenso salvato con successo!');
-            resetForm();
-        } else {
-            alert('Si è verificato un errore: ' + response.message);
-            nextButton.innerHTML = 'Salva Consenso';
-        }
-      })
-      .withFailureHandler(function(err) {
-        showLoader(false);
-        nextButton.disabled = false;
-        nextButton.innerHTML = 'Salva Consenso';
-        alert('Errore grave durante il salvataggio: ' + err.message);
-      })
-      .submitConsentForm(formData);
-  }
+      google.script.run
+        .withSuccessHandler(function(response) {
+          btn.innerText = "Registra e Continua";
+          btn.classList.remove("opacity-75", "cursor-wait");
+          if(response.success) {
+            showToast(response.message);
+            toggleSection('login-section');
+            document.getElementById('login-email').value = email;
+            // Pulisci campi
+            document.getElementById('reg-nome').value = "";
+            document.getElementById('reg-cognome').value = "";
+            document.getElementById('reg-email').value = "";
+            document.getElementById('reg-password').value = "";
+          } else {
+            showToast(response.message, "error");
+          }
+        })
+        .registerUser(nome, cognome, email, pass);
+    }
 
-  // Resetta il form a uno stato iniziale
-  function resetForm() {
-      selectedPatient = null;
-      document.getElementById('consent-form').reset();
-      signaturePads.paziente.clear();
-      signaturePads.medico.clear();
-      currentStep = 1;
-      showStep(currentStep);
-  }
+    // RECUPERO PASSWORD (Genera e invia reset temporaneo)
+    function handleRecover() {
+      const email = document.getElementById('recover-email').value.trim();
+      const btn = document.getElementById('btn-recover');
 
-</script>
+      if(!email) return showToast("Inserisci la tua email", "error");
+
+      btn.innerText = "Elaborazione in corso...";
+      btn.classList.add("opacity-75", "cursor-wait");
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          btn.innerText = "Invia Email di Reset";
+          btn.classList.remove("opacity-75", "cursor-wait");
+          if(response.success) {
+            showToast(response.message);
+            toggleSection('login-section');
+            document.getElementById('recover-email').value = "";
+          } else {
+            showToast(response.message, "error");
+          }
+        })
+        .recoverPassword(email);
+    }
+
+    // LOGOUT
+    function logout() {
+      document.getElementById('main-app').classList.add('hidden');
+      document.getElementById('auth-module').classList.remove('hidden');
+      showToast("Disconnessione avvenuta con successo");
+      google.script.run.logAction(document.getElementById('user-display-name').innerText, 'Logout effettuato');
+    }
+  </script>
 </body>
 </html>
