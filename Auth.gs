@@ -10,8 +10,15 @@ function checkLogin(email, password) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][2] === email && data[i][3] === inputHash) { 
       const fullName = `${data[i][0]} ${data[i][1]}`;
-      logAction(fullName, 'Login effettuato');
-      return { success: true, name: fullName };
+      // Recupero ruolo da Colonna E (indice 4), default 'medico' se vuoto
+      const role = (data[i][4] || 'medico').toString().toLowerCase().trim();
+      
+      logAction(fullName, `Login effettuato (Ruolo: ${role})`);
+      return { 
+        success: true, 
+        name: fullName, 
+        role: role 
+      };
     }
   }
   return { success: false, message: 'Credenziali non valide o account inesistente.' };
@@ -36,8 +43,9 @@ function registerUser(nome, cognome, email, password, confirmPassword) {
   }
   
   const hashedPass = hashPassword(password);
-  sheet.appendRow([nome, cognome, email, hashedPass]);
-  logAction(`${nome} ${cognome}`, 'Registrazione nuova utenza');
+  // Di default le nuove registrazioni vengono create come 'segretario' (modificabile da DB)
+  sheet.appendRow([nome, cognome, email, hashedPass, 'segretario']);
+  logAction(`${nome} ${cognome}`, 'Registrazione nuova utenza (segretario)');
   
   return { success: true, message: 'Account registrato con successo!' };
 }

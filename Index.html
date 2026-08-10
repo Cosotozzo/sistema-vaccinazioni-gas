@@ -14,7 +14,7 @@
   <style>
     /* Ottimizzazione target touch per Tablet 10" (min. 48px/56px) */
     input, button, select { min-height: 52px; font-size: 1.1rem; }
-    .btn-touch { min-height: 56px; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-touch { min-height: 56px; display: inline-flex; items-center; justify-content: center; }
     
     .bg-medical {
       background-image: linear-gradient(rgba(240, 249, 255, 0.93), rgba(224, 242, 254, 0.96)), url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=2000');
@@ -87,21 +87,12 @@
           <input type="password" id="reg-confirm-password" oninput="checkPasswordRules()" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
         </div>
 
-        <!-- CHECKLIST SICUREZZA PASSWORD -->
         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-2">
           <p class="font-bold text-slate-700 uppercase mb-1">Requisiti Sicurezza Password:</p>
-          <div id="rule-length" class="flex items-center text-slate-400">
-            <span class="icon mr-2 font-bold">❌</span> Almeno 8 caratteri minimi
-          </div>
-          <div id="rule-special" class="flex items-center text-slate-400">
-            <span class="icon mr-2 font-bold">❌</span> Almeno 1 carattere speciale (!@#$%^&*...)
-          </div>
-          <div id="rule-numbers" class="flex items-center text-slate-400">
-            <span class="icon mr-2 font-bold">❌</span> Almeno 2 numeri
-          </div>
-          <div id="rule-match" class="flex items-center text-slate-400">
-            <span class="icon mr-2 font-bold">❌</span> Le password coincidono perfettamente
-          </div>
+          <div id="rule-length" class="flex items-center text-slate-400"><span class="icon mr-2 font-bold">❌</span> Almeno 8 caratteri minimi</div>
+          <div id="rule-special" class="flex items-center text-slate-400"><span class="icon mr-2 font-bold">❌</span> Almeno 1 carattere speciale (!@#$%^&*...)</div>
+          <div id="rule-numbers" class="flex items-center text-slate-400"><span class="icon mr-2 font-bold">❌</span> Almeno 2 numeri</div>
+          <div id="rule-match" class="flex items-center text-slate-400"><span class="icon mr-2 font-bold">❌</span> Le password coincidono perfettamente</div>
         </div>
         
         <button onclick="handleRegister()" id="btn-register" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-lg shadow-lg shadow-emerald-600/20">
@@ -127,209 +118,309 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- DASHBOARD WIZARD A SCHERMATE (TABLET 10") -->
+  <!-- APPLICATION CONTAINER -->
   <!-- ======================================================== -->
   <div id="main-app" class="hidden w-full min-h-screen flex flex-col bg-slate-100">
     
     <!-- Top Bar -->
-    <div class="bg-sky-950 text-white shadow-md px-6 py-4 flex justify-between items-center shrink-0">
+    <div class="bg-sky-950 text-white shadow-md px-6 py-4 flex flex-wrap justify-between items-center gap-4 shrink-0">
       <div class="font-bold text-xl flex items-center gap-3">
         <span class="p-2 bg-sky-800 rounded-xl">💉</span>
-        <span>Modulo Consenso Vaccinazione</span>
+        <span>Sistema Vaccinale</span>
       </div>
+
+      <!-- Navigation Tabs (Visibile unicamente se l'utente è MEDICO) -->
+      <div id="doctor-nav-tabs" class="hidden flex gap-2 bg-sky-900/60 p-1.5 rounded-2xl border border-sky-800">
+        <button id="tab-btn-modulo" onclick="switchAppTab('modulo')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all">
+          📋 Modulo Vaccinale
+        </button>
+        <button id="tab-btn-lotti" onclick="switchAppTab('lotti')" class="px-5 py-2.5 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all">
+          📦 Gestione Lotti Vaccini
+        </button>
+      </div>
+
       <div class="flex items-center gap-4">
-        <span id="user-display-name" class="hidden sm:inline font-medium text-sky-200"></span>
+        <div class="text-right">
+          <span id="user-display-name" class="block font-medium text-sky-200 text-sm"></span>
+          <span id="user-display-role" class="block text-xs font-bold text-sky-400 uppercase"></span>
+        </div>
         <button onclick="logout()" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-bold">Disconnetti</button>
       </div>
     </div>
 
-    <!-- Stepper Indicator -->
-    <div class="bg-white border-b border-slate-200 px-4 py-3 shrink-0 shadow-sm">
-      <div class="max-w-4xl mx-auto flex justify-between items-center text-xs sm:text-sm font-bold">
-        <div id="step-indicator-1" class="step-node flex items-center gap-2 text-sky-600">
-          <span class="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center font-black">1</span>
-          <span class="hidden sm:inline">Paziente</span>
-        </div>
-        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
-        <div id="step-indicator-2" class="step-node flex items-center gap-2 text-slate-400">
-          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">2</span>
-          <span class="hidden sm:inline">Vaccino</span>
-        </div>
-        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
-        <div id="step-indicator-3" class="step-node flex items-center gap-2 text-slate-400">
-          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">3</span>
-          <span class="hidden sm:inline">Consenso</span>
-        </div>
-        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
-        <div id="step-indicator-4" class="step-node flex items-center gap-2 text-slate-400">
-          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">4</span>
-          <span class="hidden sm:inline">Biometria</span>
-        </div>
-        <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
-        <div id="step-indicator-5" class="step-node flex items-center gap-2 text-slate-400">
-          <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">5</span>
-          <span class="hidden sm:inline">Conferma</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contenuto Wizard -->
-    <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-grow flex flex-col justify-between">
+    <!-- ======================================================== -->
+    <!-- VISTA 1: MODULO VACCINALE (WIZARD 5 PASSI) -->
+    <!-- ======================================================== -->
+    <div id="view-modulo" class="flex-grow flex flex-col">
       
-      <!-- SCREEN 1: PAZIENTE -->
-      <div id="wizard-screen-1" class="wizard-screen bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
-        <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 1: Selezione Paziente</h2>
-        
-        <div class="relative mb-6">
-          <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Cerca Anagrafica Paziente</label>
-          <input type="text" id="patient-search-input" oninput="onPatientSearchInput(this.value)" placeholder="Digita Cognome, Nome o Codice Fiscale..." class="w-full px-5 border-2 border-sky-200 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/30">
-          <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-100"></div>
-        </div>
-
-        <div id="selected-patient-card" class="hidden p-5 bg-sky-50 border-2 border-sky-200 rounded-2xl">
-          <div class="flex justify-between items-center mb-3">
-            <span class="bg-sky-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase">Paziente Selezionato</span>
-            <button onclick="clearPatientSelection()" class="text-xs text-rose-600 font-bold hover:underline">Cambia Paziente</button>
+      <!-- Stepper Indicator -->
+      <div class="bg-white border-b border-slate-200 px-4 py-3 shrink-0 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center text-xs sm:text-sm font-bold">
+          <div id="step-indicator-1" class="step-node flex items-center gap-2 text-sky-600">
+            <span class="w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center font-black">1</span>
+            <span class="hidden sm:inline">Paziente</span>
           </div>
-          <h3 id="patient-card-name" class="text-2xl font-black text-slate-800 mb-3"></h3>
-          <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
-            <div><strong>Codice Fiscale:</strong> <span id="patient-card-cf"></span></div>
-            <div><strong>Data Nascita:</strong> <span id="patient-card-dob"></span></div>
-            <div><strong>Sesso:</strong> <span id="patient-card-sex"></span></div>
-            <div><strong>Telefono:</strong> <span id="patient-card-phone"></span></div>
-            <div class="col-span-2"><strong>Indirizzo:</strong> <span id="patient-card-address"></span></div>
+          <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+          <div id="step-indicator-2" class="step-node flex items-center gap-2 text-slate-400">
+            <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">2</span>
+            <span class="hidden sm:inline">Vaccino</span>
           </div>
-        </div>
-      </div>
-
-      <!-- SCREEN 2: VACCINO -->
-      <div id="wizard-screen-2" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
-        <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 2: Dettagli Somministrazione Vaccino</h2>
-        
-        <div class="space-y-5">
-          <div>
-            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Seleziona Vaccino Disponibile</label>
-            <select id="vaccine-select" onchange="onVaccineSelected()" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none bg-white font-medium">
-              <option value="">Caricamento vaccini in corso...</option>
-            </select>
+          <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+          <div id="step-indicator-3" class="step-node flex items-center gap-2 text-slate-400">
+            <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">3</span>
+            <span class="hidden sm:inline">Consenso</span>
           </div>
-          <div>
-            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Numero Lotto</label>
-            <input type="text" id="vaccine-lotto" readonly class="w-full px-4 border-2 border-slate-100 rounded-2xl bg-slate-100 text-slate-700 font-mono font-bold">
+          <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+          <div id="step-indicator-4" class="step-node flex items-center gap-2 text-slate-400">
+            <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">4</span>
+            <span class="hidden sm:inline">Biometria</span>
           </div>
-          <div>
-            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Luogo di Somministrazione</label>
-            <input type="text" id="vaccine-location" value="STUDIO/AMBULATORIO" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-medium">
+          <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+          <div id="step-indicator-5" class="step-node flex items-center gap-2 text-slate-400">
+            <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black">5</span>
+            <span class="hidden sm:inline">Conferma</span>
           </div>
         </div>
       </div>
 
-      <!-- SCREEN 3: CONSENSO VACCINALE -->
-      <div id="wizard-screen-3" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
-        <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Dichiarazione e Consenso Vaccinale</h2>
+      <!-- Contenuto Wizard -->
+      <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-grow flex flex-col justify-between">
         
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
-          <p class="font-bold text-slate-900">Il/La sottoscritto/a dichiara di:</p>
-          <ul class="list-disc pl-5 space-y-1">
-            <li>Aver ricevuto e letto la scheda informativa sintetica antinfluenzale;</li>
-            <li>Essere stato/a informato/a su benefici e rischi della vaccinazione;</li>
-            <li>Aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
-            <li>Aver compreso le informazioni e di prestare il proprio consenso.</li>
-          </ul>
-        </div>
-
-        <div class="mb-4">
-          <label class="flex items-center gap-3 cursor-pointer p-3 bg-sky-50 rounded-2xl border border-sky-200">
-            <input type="checkbox" id="check-consenso-vaccino" checked class="w-6 h-6 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
-            <span class="font-bold text-sky-950 text-sm">ACCONSENTE AD ESSERE SOTTOPOSTO/A ALLA VACCINAZIONE</span>
-          </label>
-        </div>
-
-        <div>
-          <div class="flex justify-between items-center mb-2">
-            <label class="font-bold text-sm text-slate-800">Firma 1 Paziente (Consenso Vaccinale)</label>
-            <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci Firma</button>
+        <!-- SCREEN 1: PAZIENTE -->
+        <div id="wizard-screen-1" class="wizard-screen bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+          <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 1: Selezione Paziente</h2>
+          
+          <div class="relative mb-6">
+            <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Cerca Anagrafica Paziente</label>
+            <input type="text" id="patient-search-input" oninput="onPatientSearchInput(this.value)" placeholder="Digita Cognome, Nome o Codice Fiscale..." class="w-full px-5 border-2 border-sky-200 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/30">
+            <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-100"></div>
           </div>
-          <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
-            <canvas id="canvas-patient-vaccino" width="600" height="180" class="w-full h-44 bg-white cursor-crosshair"></canvas>
+
+          <div id="selected-patient-card" class="hidden p-5 bg-sky-50 border-2 border-sky-200 rounded-2xl">
+            <div class="flex justify-between items-center mb-3">
+              <span class="bg-sky-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase">Paziente Selezionato</span>
+              <button onclick="clearPatientSelection()" class="text-xs text-rose-600 font-bold hover:underline">Cambia Paziente</button>
+            </div>
+            <h3 id="patient-card-name" class="text-2xl font-black text-slate-800 mb-3"></h3>
+            <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
+              <div><strong>Codice Fiscale:</strong> <span id="patient-card-cf"></span></div>
+              <div><strong>Data Nascita:</strong> <span id="patient-card-dob"></span></div>
+              <div><strong>Sesso:</strong> <span id="patient-card-sex"></span></div>
+              <div><strong>Telefono:</strong> <span id="patient-card-phone"></span></div>
+              <div class="col-span-2"><strong>Indirizzo:</strong> <span id="patient-card-address"></span></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- SCREEN 4: BIOMETRIA & PRIVACY -->
-      <div id="wizard-screen-4" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
-        <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 4: Consenso Dati Biometrici e GDPR</h2>
-        
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
-          <p class="font-bold text-slate-900">Informativa Trattamento Dati (Regolamento UE 2016/679):</p>
-          <ul class="list-disc pl-5 space-y-1">
-            <li>I dati sanitari saranno trattati esclusivamente per la prestazione sanitaria.</li>
-            <li>Verranno raccolti dati biometrici al solo scopo di garantire la validità legale della firma elettronica.</li>
-          </ul>
+        <!-- SCREEN 2: VACCINO -->
+        <div id="wizard-screen-2" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+          <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 2: Dettagli Somministrazione Vaccino</h2>
+          
+          <div class="space-y-5">
+            <div>
+              <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Seleziona Vaccino Disponibile</label>
+              <select id="vaccine-select" onchange="onVaccineSelected()" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none bg-white font-medium">
+                <option value="">Caricamento vaccini in corso...</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Numero Lotto</label>
+              <input type="text" id="vaccine-lotto" readonly class="w-full px-4 border-2 border-slate-100 rounded-2xl bg-slate-100 text-slate-700 font-mono font-bold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Luogo di Somministrazione</label>
+              <input type="text" id="vaccine-location" value="STUDIO/AMBULATORIO" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-medium">
+            </div>
+          </div>
         </div>
 
-        <div class="mb-4">
-          <label class="flex items-center gap-3 cursor-pointer p-3 bg-sky-50 rounded-2xl border border-sky-200">
-            <input type="checkbox" id="check-consenso-privacy" checked class="w-6 h-6 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
-            <span class="font-bold text-sky-950 text-sm">ACCONSENTE al trattamento dei dati personali e biometrici</span>
-          </label>
-        </div>
+        <!-- SCREEN 3: CONSENSO VACCINALE -->
+        <div id="wizard-screen-3" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+          <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Dichiarazione e Consenso Vaccinale</h2>
+          
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
+            <p class="font-bold text-slate-900">Il/La sottoscritto/a dichiara di:</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>Aver ricevuto e letto la scheda informativa sintetica antinfluenzale;</li>
+              <li>Essere stato/a informato/a su benefici e rischi della vaccinazione;</li>
+              <li>Aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
+              <li>Aver compreso le informazioni e di esprimere la propria volontà.</li>
+            </ul>
+          </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- SELEZIONE CONSENSO VACCINALE -->
+          <div class="mb-6">
+            <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso Somministrazione Vaccino:</label>
+            <div class="grid grid-cols-2 gap-4">
+              <button type="button" onclick="setConsentChoice('consensoVaccino', true)" id="btn-vaccino-yes" class="btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all">
+                ✓ ACCONSENTO
+              </button>
+              <button type="button" onclick="setConsentChoice('consensoVaccino', false)" id="btn-vaccino-no" class="btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all">
+                ✕ NEGO
+              </button>
+            </div>
+          </div>
+
           <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="font-bold text-xs text-slate-800">Firma 2 Paziente (Biometria)</label>
-              <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+            <div class="flex justify-between items-center mb-2">
+              <label class="font-bold text-sm text-slate-800">Firma 1 Paziente (Consenso Vaccinale)</label>
+              <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci Firma</button>
             </div>
             <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
-              <canvas id="canvas-patient-biometrico" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
+              <canvas id="canvas-patient-vaccino" width="600" height="180" class="w-full h-44 bg-white cursor-crosshair"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCREEN 4: BIOMETRIA & PRIVACY -->
+        <div id="wizard-screen-4" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+          <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 4: Consenso Dati Biometrici e GDPR</h2>
+          
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
+            <p class="font-bold text-slate-900">Informativa Trattamento Dati (Regolamento UE 2016/679):</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>I dati sanitari saranno trattati esclusivamente per la prestazione sanitaria.</li>
+              <li>Verranno raccolti dati biometrici al solo scopo di garantire la validità legale della firma elettronica.</li>
+            </ul>
+          </div>
+
+          <!-- SELEZIONE CONSENSO PRIVACY -->
+          <div class="mb-6">
+            <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso Trattamento Dati Personali e Biometrici:</label>
+            <div class="grid grid-cols-2 gap-4">
+              <button type="button" onclick="setConsentChoice('consensoPrivacy', true)" id="btn-privacy-yes" class="btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all">
+                ✓ ACCONSENTO
+              </button>
+              <button type="button" onclick="setConsentChoice('consensoPrivacy', false)" id="btn-privacy-no" class="btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all">
+                ✕ NEGO
+              </button>
             </div>
           </div>
 
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="font-bold text-xs text-slate-800">Firma Operatore Sanitario</label>
-              <button onclick="clearCanvas('canvas-doctor')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="font-bold text-xs text-slate-800">Firma 2 Paziente (Biometria)</label>
+                <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+              </div>
+              <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
+                <canvas id="canvas-patient-biometrico" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
+              </div>
             </div>
-            <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
-              <canvas id="canvas-doctor" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
+
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="font-bold text-xs text-slate-800">Firma Operatore Sanitario</label>
+                <button onclick="clearCanvas('canvas-doctor')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+              </div>
+              <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
+                <canvas id="canvas-doctor" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- SCREEN 5: CONFERMA -->
+        <div id="wizard-screen-5" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
+          <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 5: Riepilogo Finale e Generazione PDF</h2>
+          
+          <div id="summary-content" class="bg-sky-50/60 border border-sky-200 p-5 rounded-2xl space-y-3 text-sm mb-6"></div>
+
+          <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xl shadow-xl shadow-emerald-600/30">
+            Registra Consenso e Genera PDF
+          </button>
+        </div>
+
+        <!-- Controlli Navigazione Wizard -->
+        <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
+          <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl hidden">
+            ← Indietro
+          </button>
+          <div class="flex-grow"></div>
+          <button id="btn-next-step" onclick="changeStep(1)" class="btn-touch px-8 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl shadow-lg shadow-sky-600/20">
+            Avanti →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VISTA 2: GESTIONE LOTTI VACCINI (ESCLUSIVA MEDICO) -->
+    <!-- ======================================================== -->
+    <div id="view-gestione-lotti" class="hidden p-4 sm:p-6 max-w-5xl mx-auto w-full space-y-6">
+      
+      <!-- Card Form Inserimento Nuovo Lotto -->
+      <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
+        <h2 class="text-xl font-bold text-sky-950 mb-4 flex items-center gap-2">
+          <span>➕</span> Inserimento Nuovo Lotto Vaccino
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-1">
+            <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Denominazione Vaccino</label>
+            <input type="text" id="new-vaccine-name" placeholder="es. Fluad Tetra, Vaxigrip..." class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none">
+          </div>
+          <div class="sm:col-span-1">
+            <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Numero Lotto</label>
+            <input type="text" id="new-vaccine-lotto" placeholder="es. LT-2026-99" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-mono">
+          </div>
+          <div class="sm:col-span-1 flex items-end">
+            <button onclick="handleCreateVaccineBatch()" id="btn-add-vaccine" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20">
+              Aggiungi Lotto
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- SCREEN 5: CONFERMA -->
-      <div id="wizard-screen-5" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
-        <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 5: Riepilogo Finale e Generazione PDF</h2>
-        
-        <div id="summary-content" class="bg-sky-50/60 border border-sky-200 p-5 rounded-2xl space-y-3 text-sm mb-6"></div>
+      <!-- Tabella / Registro Lotti Vaccini -->
+      <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+          <h2 class="text-xl font-bold text-sky-950 flex items-center gap-2">
+            <span>📦</span> Registro Lotti Registrati
+          </h2>
+          <button onclick="loadManagementVaccines()" class="text-xs font-bold text-sky-600 hover:underline">🔄 Aggiorna Lista</button>
+        </div>
 
-        <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xl shadow-xl shadow-emerald-600/30">
-          Registra Consenso e Genera PDF
-        </button>
-      </div>
-
-      <!-- Controlli Navigazione Wizard -->
-      <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
-        <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl hidden">
-          ← Indietro
-        </button>
-        <div class="flex-grow"></div>
-        <button id="btn-next-step" onclick="changeStep(1)" class="btn-touch px-8 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl shadow-lg shadow-sky-600/20">
-          Avanti →
-        </button>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs uppercase text-slate-500 bg-slate-50/50">
+                <th class="p-4 font-extrabold">Denominazione</th>
+                <th class="p-4 font-extrabold">N° Lotto</th>
+                <th class="p-4 font-extrabold">Stato</th>
+                <th class="p-4 font-extrabold text-right">Azione</th>
+              </tr>
+            </thead>
+            <tbody id="management-vaccines-tbody" class="divide-y divide-slate-100 text-sm">
+              <tr>
+                <td colspan="4" class="p-6 text-center text-slate-400 font-medium">Caricamento registro vaccini...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>
+
   </div>
 
-  <!-- JavaScript Client Application Logic -->
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <!-- ======================================================== -->
   <script>
     // State Management
     let currentStep = 1;
     let selectedPatient = null;
     let availableVaccines = [];
+    let currentUserRole = '';
     let searchDebounce = null;
+    
+    // Stato dei Consensi (null = Non ancora selezionato)
+    let consentState = {
+      consensoVaccino: null, // true (Acconsento) | false (Nego) | null
+      consensoPrivacy: null  // true (Acconsento) | false (Nego) | null
+    };
+
     const canvasStates = { 'canvas-patient-vaccino': false, 'canvas-patient-biometrico': false, 'canvas-doctor': false };
 
     // Promise Wrapper per Comunicazione Client-Server Asincrona
@@ -360,7 +451,6 @@
       document.getElementById(sectionId).classList.remove('hidden');
     }
 
-    // Controlli Sicurezza Password Client-Side
     function checkPasswordRules() {
       const pass = document.getElementById('reg-password').value;
       const confirmPass = document.getElementById('reg-confirm-password').value;
@@ -408,10 +498,22 @@
         btn.disabled = false;
         
         if (response.success) {
+          currentUserRole = response.role;
           showToast(`Benvenuto/a, ${response.name}`);
+          
           document.getElementById('auth-module').classList.add('hidden');
           document.getElementById('main-app').classList.remove('hidden');
           document.getElementById('user-display-name').innerText = response.name;
+          document.getElementById('user-display-role').innerText = `Ruolo: ${response.role}`;
+
+          // Gestione interfaccia basata sul RUOLO
+          if (currentUserRole === 'medico') {
+            document.getElementById('doctor-nav-tabs').classList.remove('hidden');
+          } else {
+            document.getElementById('doctor-nav-tabs').classList.add('hidden');
+          }
+
+          switchAppTab('modulo');
           initDashboard();
         } else {
           showToast(response.message, "error");
@@ -483,10 +585,50 @@
     function logout() {
       document.getElementById('main-app').classList.add('hidden');
       document.getElementById('auth-module').classList.remove('hidden');
+      currentUserRole = '';
       showToast("Disconnessione effettuata");
     }
 
-    // Gestione Wizard
+    // Navigazione Tab Superiori per il Medico
+    function switchAppTab(tab) {
+      const viewModulo = document.getElementById('view-modulo');
+      const viewLotti = document.getElementById('view-gestione-lotti');
+      const btnModulo = document.getElementById('tab-btn-modulo');
+      const btnLotti = document.getElementById('tab-btn-lotti');
+
+      if (tab === 'modulo') {
+        viewModulo.classList.remove('hidden');
+        viewLotti.classList.add('hidden');
+        btnModulo.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all";
+        btnLotti.className = "px-5 py-2.5 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all";
+        loadVaccines(); // Ricarica i vaccini attivi
+      } else if (tab === 'lotti') {
+        viewModulo.classList.add('hidden');
+        viewLotti.classList.remove('hidden');
+        btnLotti.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all";
+        btnModulo.className = "px-5 py-2.5 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all";
+        loadManagementVaccines(); // Carica registro completo
+      }
+    }
+
+    // Gestione Pulsanti Consenso (Acconsento / Nego)
+    function setConsentChoice(type, choice) {
+      consentState[type] = choice;
+
+      const btnYes = document.getElementById(type === 'consensoVaccino' ? 'btn-vaccino-yes' : 'btn-privacy-yes');
+      const btnNo = document.getElementById(type === 'consensoVaccino' ? 'btn-vaccino-no' : 'btn-privacy-no');
+
+      if (choice === true) {
+        btnYes.className = "btn-touch w-full rounded-2xl font-black text-base bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 border-2 border-emerald-600 scale-[1.02] transition-all";
+        btnNo.className = "btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-400 hover:bg-rose-50 transition-all opacity-60";
+      } else {
+        btnNo.className = "btn-touch w-full rounded-2xl font-black text-base bg-rose-600 text-white shadow-lg shadow-rose-600/30 border-2 border-rose-600 scale-[1.02] transition-all";
+        btnYes.className = "btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-400 hover:bg-emerald-50 transition-all opacity-60";
+        showToast("Attenzione: Se il consenso viene negato, la procedura verrà bloccata.", "error");
+      }
+    }
+
+    // Gestione Wizard Modulo
     function initDashboard() {
       loadVaccines();
       setupCanvasPad('canvas-patient-vaccino');
@@ -505,6 +647,7 @@
       updateStepUI();
     }
 
+    // VALIDAZIONE E BLOCCO RIGIDO PROCEDURA
     function validateCurrentStep() {
       if (currentStep === 1 && !selectedPatient) {
         showToast("Seleziona un paziente prima di continuare", "error");
@@ -518,12 +661,28 @@
         }
       }
       if (currentStep === 3) {
+        if (consentState.consensoVaccino === null) {
+          showToast("Devi selezionare ACCONSENTO o NEGO per proseguire", "error");
+          return false;
+        }
+        if (consentState.consensoVaccino === false) {
+          showToast("PROCEDURA BLOCCATA: Consenso alla vaccinazione negato.", "error");
+          return false;
+        }
         if (!canvasStates['canvas-patient-vaccino']) {
           showToast("Manca la firma del paziente per il consenso vaccinale", "error");
           return false;
         }
       }
       if (currentStep === 4) {
+        if (consentState.consensoPrivacy === null) {
+          showToast("Devi selezionare ACCONSENTO o NEGO per la privacy/biometria", "error");
+          return false;
+        }
+        if (consentState.consensoPrivacy === false) {
+          showToast("PROCEDURA BLOCCATA: Consenso ai dati biometrici negato.", "error");
+          return false;
+        }
         if (!canvasStates['canvas-patient-biometrico']) {
           showToast("Manca la firma del paziente per i dati biometrici", "error");
           return false;
@@ -571,14 +730,14 @@
         <p><strong>Paziente:</strong> ${selectedPatient.cognome} ${selectedPatient.nome} (CF: ${selectedPatient.codicefiscale})</p>
         <p><strong>Vaccino:</strong> ${vData.denominazione || ''} | <strong>Lotto:</strong> ${vData.lotto || ''}</p>
         <p><strong>Luogo:</strong> ${document.getElementById('vaccine-location').value}</p>
-        <p><strong>Consenso Vaccinazione:</strong> ${document.getElementById('check-consenso-vaccino').checked ? '✓ ACCONSENTE' : '❌ NON ACCONSENTE'}</p>
-        <p><strong>Consenso Dati Biometrici:</strong> ${document.getElementById('check-consenso-privacy').checked ? '✓ ACCONSENTE' : '❌ NON ACCONSENTE'}</p>
+        <p><strong>Consenso Vaccinazione:</strong> <span class="text-emerald-700 font-extrabold">✓ ACCONSENTE</span></p>
+        <p><strong>Consenso Dati Biometrici:</strong> <span class="text-emerald-700 font-extrabold">✓ ACCONSENTE</span></p>
         <p><strong>Firme Collegate:</strong> 3 su 3 Presenti e Valide</p>
       `;
       document.getElementById('summary-content').innerHTML = html;
     }
 
-    // Ricerca Autocomplete
+    // Ricerca Autocomplete Paziente
     function onPatientSearchInput(query) {
       clearTimeout(searchDebounce);
       const dropdown = document.getElementById('search-suggestions');
@@ -627,7 +786,7 @@
       document.getElementById('selected-patient-card').classList.add('hidden');
     }
 
-    // Caricamento Vaccini
+    // Caricamento Vaccini ATTIVI per la Tendina Modulo
     async function loadVaccines() {
       try {
         availableVaccines = await runServerFunction('getVaccineData') || [];
@@ -644,6 +803,95 @@
     function onVaccineSelected() {
       const idx = document.getElementById('vaccine-select').value;
       document.getElementById('vaccine-lotto').value = (idx !== "" && availableVaccines[idx]) ? availableVaccines[idx].lotto : "";
+    }
+
+    // LOGICA GESTIONE LOTTI VACCINI (MEDICO)
+    async function loadManagementVaccines() {
+      const tbody = document.getElementById('management-vaccines-tbody');
+      tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">Aggiornamento registro in corso...</td></tr>`;
+
+      try {
+        const list = await runServerFunction('getAllVaccinesForManagement') || [];
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 italic">Nessun lotto vaccino presente nel database.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = "";
+        list.forEach(v => {
+          const isCompleted = (v.stato || '').toLowerCase() === 'completato';
+          const badgeClass = isCompleted 
+            ? "bg-slate-100 text-slate-600 border border-slate-300" 
+            : "bg-emerald-100 text-emerald-800 border border-emerald-300";
+
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-50/80 transition-colors";
+          tr.innerHTML = `
+            <td class="p-4 font-bold text-slate-800">${v.denominazione}</td>
+            <td class="p-4 font-mono font-bold text-slate-700">${v.lotto}</td>
+            <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-black uppercase ${badgeClass}">${v.stato}</span></td>
+            <td class="p-4 text-right">
+              ${!isCompleted ? `
+                <button onclick="handleMarkCompleted(${v.rowIndex})" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md">
+                  Marchia come Completato
+                </button>
+              ` : '<span class="text-xs font-bold text-slate-400 italic">Esaurito/Completato</span>'}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-rose-500 font-bold">Errore durante il caricamento del registro.</td></tr>`;
+      }
+    }
+
+    async function handleCreateVaccineBatch() {
+      const nameInput = document.getElementById('new-vaccine-name');
+      const lottoInput = document.getElementById('new-vaccine-lotto');
+      const btn = document.getElementById('btn-add-vaccine');
+
+      const name = nameInput.value.trim();
+      const lotto = lottoInput.value.trim();
+
+      if (!name || !lotto) return showToast("Inserisci sia la Denominazione che il Numero Lotto", "error");
+
+      btn.innerText = "Salvataggio...";
+      btn.disabled = true;
+
+      try {
+        const res = await runServerFunction('addVaccineBatch', name, lotto);
+        btn.innerText = "Aggiungi Lotto";
+        btn.disabled = false;
+
+        if (res.success) {
+          showToast(res.message);
+          nameInput.value = "";
+          lottoInput.value = "";
+          loadManagementVaccines();
+        } else {
+          showToast(res.message, "error");
+        }
+      } catch (err) {
+        btn.innerText = "Aggiungi Lotto";
+        btn.disabled = false;
+        showToast("Errore di comunicazione durante l'inserimento", "error");
+      }
+    }
+
+    async function handleMarkCompleted(rowIndex) {
+      if (!confirm("Sei sicuro di voler marchiare questo lotto come COMPLETATO?\nNon apparirà più tra i vaccini selezionabili per le nuove somministrazioni.")) return;
+
+      try {
+        const res = await runServerFunction('markVaccineCompleted', rowIndex);
+        if (res.success) {
+          showToast(res.message);
+          loadManagementVaccines();
+        } else {
+          showToast(res.message, "error");
+        }
+      } catch (err) {
+        showToast("Errore nell'aggiornamento dello stato del lotto", "error");
+      }
     }
 
     // Canvas Touch Pad
@@ -723,8 +971,8 @@
         vaccinoDenominazione: vData.denominazione,
         vaccinoLotto: vData.lotto,
         luogoVaccinazione: document.getElementById('vaccine-location').value,
-        consensoVaccino: document.getElementById('check-consenso-vaccino').checked ? 'Acconsente' : 'Non acconsente',
-        consensoPrivacy: document.getElementById('check-consenso-privacy').checked ? 'Acconsente' : 'Non acconsente',
+        consensoVaccino: 'Acconsente',
+        consensoPrivacy: 'Acconsente',
         firmaPazienteVaccino: document.getElementById('canvas-patient-vaccino').toDataURL('image/png'),
         firmaPazienteBiometrico: document.getElementById('canvas-patient-biometrico').toDataURL('image/png'),
         firmaMedico: document.getElementById('canvas-doctor').toDataURL('image/png')
@@ -738,11 +986,18 @@
         if (res.status === 'success') {
           showToast("Consenso registrato e PDF salvato con successo!");
           
-          // Reset Wizard
+          // Reset completo
           clearPatientSelection();
           clearCanvas('canvas-patient-vaccino');
           clearCanvas('canvas-patient-biometrico');
           clearCanvas('canvas-doctor');
+          
+          consentState = { consensoVaccino: null, consensoPrivacy: null };
+          document.getElementById('btn-vaccino-yes').className = "btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all";
+          document.getElementById('btn-vaccino-no').className = "btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all";
+          document.getElementById('btn-privacy-yes').className = "btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all";
+          document.getElementById('btn-privacy-no').className = "btn-touch w-full rounded-2xl font-black text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all";
+
           currentStep = 1;
           updateStepUI();
           loadVaccines();

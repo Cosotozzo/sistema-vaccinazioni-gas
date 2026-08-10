@@ -9,6 +9,81 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
 }
 
+// Restituisce SOLO i vaccini attivi per la compilazione del modulo
+function getVaccineData() {
+  const sheet = getDb().getSheetByName(SHEET_VACCINI);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  
+  const headers = data.shift().map(h => String(h || '').toLowerCase().trim());
+  const denominazioneIdx = headers.indexOf('denominazionevaccino');
+  const lottoIdx = headers.indexOf('numerolotto');
+  const statoIdx = headers.indexOf('stato');
+
+  return data
+    .filter(row => {
+      const stato = (row[statoIdx] || '').toString().toLowerCase().trim();
+      return stato !== 'completato'; // Esclude i completati
+    })
+    .map(row => ({
+      denominazione: row[denominazioneIdx] || '',
+      lotto: row[lottoIdx] || ''
+    }));
+}
+
+// Restituisce TUTTI i vaccini per la schermata di gestione del Medico
+function getAllVaccinesForManagement() {
+  const sheet = getDb().getSheetByName(SHEET_VACCINI);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+
+  const headers = data.shift().map(h => String(h || '').toLowerCase().trim());
+  const denominazioneIdx = headers.indexOf('denominazionevaccino');
+  const lottoIdx = headers.indexOf('numerolotto');
+  const statoIdx = headers.indexOf('stato');
+
+  return data.map((row, index) => ({
+    rowIndex: index + 2, // riga effettiva nel foglio
+    denominazione: row[denominazioneIdx] || '',
+    lotto: row[lottoIdx] || '',
+    stato: row[statoIdx] || 'Attivo'
+  }));
+}
+
+// Inserimento nuovo lotto vaccino
+function addVaccineBatch(denominazione, lotto) {
+  if (!denominazione || !lotto) {
+    return { success: false, message: 'Denominazione e Numero Lotto sono obbligatori.' };
+  }
+
+  const sheet = getDb().getSheetByName(SHEET_VACCINI);
+  sheet.appendRow([denominazione, lotto, 'Attivo', new Date()]);
+  logAction('Medico', `Inserito nuovo lotto vaccino: ${denominazione} - Lotto ${lotto}`);
+  return { success: true, message: 'Lotto vaccino inserito con successo!' };
+}
+
+// Marchia un lotto come "Completato"
+function markVaccineCompleted(rowIndex) {
+  const sheet = getDb().getSheetByName(SHEET_VACCINI);
+  if (rowIndex < 2 || rowIndex > sheet.getLastRow()) {
+    return { success: false, message: 'Indice riga non valido.' };
+  }
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(h => String(h || '').toLowerCase().trim());
+  const statoIdx = headers.indexOf('stato');
+
+  if (statoIdx === -1) {
+    return { success: false, message: 'Colonna Stato non trovata.' };
+  }
+
+  sheet.getRange(rowIndex, statoIdx + 1).setValue('Completato');
+  logAction('Medico', `Lotto vaccino alla riga ${rowIndex} marchiato come COMPLETATO`);
+  return { success: true, message: 'Lotto marchiato come Completato!' };
+}
+
 function getPatientSuggestions(searchTerm) {
   if (!searchTerm || searchTerm.trim().length < 3) return [];
 
@@ -85,24 +160,6 @@ function getPatientSuggestions(searchTerm) {
     }
   }
   return suggestions;
-}
-
-function getVaccineData() {
-  const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return [];
-  
-  const headers = data.shift().map(h => String(h || '').toLowerCase().trim());
-  const denominazioneIdx = headers.indexOf('denominazionevaccino');
-  const lottoIdx = headers.indexOf('numerolotto');
-  const statoIdx = headers.indexOf('stato');
-
-  return data
-    .filter(row => (row[statoIdx] || '').toString().toLowerCase().trim() !== 'completato')
-    .map(row => ({
-      denominazione: row[denominazioneIdx] || '',
-      lotto: row[lottoIdx] || ''
-    }));
 }
 
 function logAction(user, action) {
