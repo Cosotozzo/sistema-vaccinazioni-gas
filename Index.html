@@ -12,9 +12,15 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   
   <style>
-    /* Ottimizzazione target touch per Tablet 10" (min. 48px/56px) */
-    input, button, select { min-height: 52px; font-size: 1.1rem; }
-    .btn-touch { min-height: 56px; display: inline-flex; items-center; justify-content: center; }
+    /* Centratura universale per tutti i pulsanti dell'app */
+    button, .btn-touch { 
+      min-height: 52px; 
+      font-size: 1.1rem; 
+      display: inline-flex !important; 
+      align-items: center !important; 
+      justify-content: center !important; 
+      text-align: center !important; 
+    }
     
     .bg-medical {
       background-image: linear-gradient(rgba(240, 249, 255, 0.93), rgba(224, 242, 254, 0.96)), url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=2000');
@@ -28,9 +34,7 @@
 </head>
 <body class="bg-medical text-slate-800 font-sans antialiased selection:bg-sky-200">
 
-  <!-- ======================================================== -->
   <!-- MODULO AUTENTICAZIONE -->
-  <!-- ======================================================== -->
   <div id="auth-module" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-xl border border-sky-100">
       
@@ -50,14 +54,20 @@
         </div>
         <div>
           <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Password</label>
-          <input type="password" id="login-password" class="w-full px-4 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+          <div class="relative">
+            <input type="password" id="login-password" class="w-full px-4 pr-12 border-2 border-sky-100 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/50">
+            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-600 !min-h-0 p-2">
+              <svg class="w-6 h-6 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <svg class="w-6 h-6 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.05 10.05 0 013.122-.382c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m-6.165-2.298a3 3 0 11-4.243-4.243M3 3l18 18"/></svg>
+            </button>
+          </div>
         </div>
         <button onclick="handleLogin()" id="btn-login" class="btn-touch w-full bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl text-lg shadow-lg shadow-sky-600/30">
           Accedi al Sistema
         </button>
         <div class="mt-6 flex justify-between text-sm font-semibold">
-          <button onclick="toggleAuthSection('recover-section')" class="text-sky-600 hover:text-sky-800">Password dimenticata?</button>
-          <button onclick="toggleAuthSection('register-section')" class="text-sky-600 hover:text-sky-800">Nuova Utenza</button>
+          <button onclick="toggleAuthSection('recover-section')" class="text-sky-600 hover:text-sky-800 !min-h-0">Password dimenticata?</button>
+          <button onclick="toggleAuthSection('register-section')" class="text-sky-600 hover:text-sky-800 !min-h-0">Nuova Utenza</button>
         </div>
       </div>
 
@@ -80,11 +90,23 @@
         </div>
         <div>
           <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Password</label>
-          <input type="password" id="reg-password" oninput="checkPasswordRules()" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+          <div class="relative">
+            <input type="password" id="reg-password" oninput="checkPasswordRules()" class="w-full px-4 pr-12 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+            <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-600 !min-h-0 p-2">
+              <svg class="w-6 h-6 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <svg class="w-6 h-6 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.05 10.05 0 013.122-.382c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m-6.165-2.298a3 3 0 11-4.243-4.243M3 3l18 18"/></svg>
+            </button>
+          </div>
         </div>
         <div>
           <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Conferma Password</label>
-          <input type="password" id="reg-confirm-password" oninput="checkPasswordRules()" class="w-full px-4 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+          <div class="relative">
+            <input type="password" id="reg-confirm-password" oninput="checkPasswordRules()" class="w-full px-4 pr-12 border-2 border-sky-100 rounded-xl focus:border-sky-500 outline-none bg-sky-50/50">
+            <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-600 !min-h-0 p-2">
+              <svg class="w-6 h-6 eye-open hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <svg class="w-6 h-6 eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.05 10.05 0 013.122-.382c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m-6.165-2.298a3 3 0 11-4.243-4.243M3 3l18 18"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-2">
@@ -98,7 +120,7 @@
         <button onclick="handleRegister()" id="btn-register" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-lg shadow-lg shadow-emerald-600/20">
           Registra e Attiva Account
         </button>
-        <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium">Torna al Login</button>
+        <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium !min-h-0">Torna al Login</button>
       </div>
 
       <!-- RECUPERO -->
@@ -111,30 +133,30 @@
         <button onclick="handleRecover()" id="btn-recover" class="btn-touch w-full bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-lg shadow-lg shadow-amber-500/20">
           Invia Password Temporanea
         </button>
-        <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium">Annulla</button>
+        <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium !min-h-0">Annulla</button>
       </div>
 
     </div>
   </div>
 
-  <!-- ======================================================== -->
   <!-- APPLICATION CONTAINER -->
-  <!-- ======================================================== -->
   <div id="main-app" class="hidden w-full min-h-screen flex flex-col bg-slate-100">
     
     <!-- Top Bar -->
     <div class="bg-sky-950 text-white shadow-md px-6 py-4 flex flex-wrap justify-between items-center gap-4 shrink-0">
-      <div class="font-bold text-xl flex items-center gap-3">
+      <div onclick="switchAppTab('hub')" class="font-bold text-xl flex items-center gap-3 cursor-pointer">
         <span class="p-2 bg-sky-800 rounded-xl">💉</span>
         <span>Sistema Vaccinale</span>
       </div>
 
-      <!-- Navigation Tabs (Visibile unicamente se l'utente è MEDICO) -->
-      <div id="doctor-nav-tabs" class="hidden flex gap-2 bg-sky-900/60 p-1.5 rounded-2xl border border-sky-800">
-        <button id="tab-btn-modulo" onclick="switchAppTab('modulo')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all">
+      <div id="doctor-nav-tabs" class="flex gap-2 bg-sky-900/60 p-1.5 rounded-2xl border border-sky-800">
+        <button id="tab-btn-hub" onclick="switchAppTab('hub')" class="px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0">
+          🏠 Home
+        </button>
+        <button id="tab-btn-modulo" onclick="switchAppTab('modulo')" class="px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0">
           📋 Modulo Vaccinale
         </button>
-        <button id="tab-btn-lotti" onclick="switchAppTab('lotti')" class="px-5 py-2.5 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all">
+        <button id="tab-btn-lotti" onclick="switchAppTab('lotti')" class="px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0">
           📦 Gestione Lotti Vaccini
         </button>
       </div>
@@ -144,16 +166,34 @@
           <span id="user-display-name" class="block font-medium text-sky-200 text-sm"></span>
           <span id="user-display-role" class="block text-xs font-bold text-sky-400 uppercase"></span>
         </div>
-        <button onclick="logout()" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-bold">Disconnetti</button>
+        <button onclick="logout()" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-bold !min-h-0">Disconnetti</button>
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- VISTA 1: MODULO VACCINALE (WIZARD 5 PASSI) -->
-    <!-- ======================================================== -->
-    <div id="view-modulo" class="flex-grow flex flex-col">
-      
-      <!-- Stepper Indicator -->
+    <!-- VISTA HUB -->
+    <div id="view-hub" class="p-6 max-w-4xl mx-auto w-full flex-grow flex flex-col justify-center items-center">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-black text-sky-950">Seleziona Operazione</h2>
+        <p class="text-slate-600 font-medium mt-1">Scegli la funzionalità a cui accedere per proseguire</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+        <button onclick="switchAppTab('modulo')" class="flex flex-col items-center justify-center p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
+          <span class="text-5xl mb-4">📋</span>
+          <span class="text-2xl font-black text-sky-950">Modulo Vaccinale</span>
+          <span class="text-xs text-sky-600 font-bold mt-2">Compilazione consenso & Firma digitale</span>
+        </button>
+
+        <button id="hub-btn-lotti" onclick="switchAppTab('lotti')" class="flex flex-col items-center justify-center p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
+          <span class="text-5xl mb-4">📦</span>
+          <span class="text-2xl font-black text-sky-950">Gestione Lotti Vaccinali</span>
+          <span class="text-xs text-sky-600 font-bold mt-2">Registro, conteggio dosi & stato giacenze</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VISTA MODULO VACCINALE -->
+    <div id="view-modulo" class="hidden flex-grow flex flex-col">
       <div class="bg-white border-b border-slate-200 px-4 py-3 shrink-0 shadow-sm">
         <div class="max-w-4xl mx-auto flex justify-between items-center text-xs sm:text-sm font-bold">
           <div id="step-indicator-1" class="step-node flex items-center gap-2 text-sky-600">
@@ -183,10 +223,9 @@
         </div>
       </div>
 
-      <!-- Contenuto Wizard -->
       <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-grow flex flex-col justify-between">
         
-        <!-- SCREEN 1: PAZIENTE -->
+        <!-- SCREEN 1 -->
         <div id="wizard-screen-1" class="wizard-screen bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
           <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 1: Selezione Paziente</h2>
           
@@ -199,7 +238,7 @@
           <div id="selected-patient-card" class="hidden p-5 bg-sky-50 border-2 border-sky-200 rounded-2xl">
             <div class="flex justify-between items-center mb-3">
               <span class="bg-sky-600 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase">Paziente Selezionato</span>
-              <button onclick="clearPatientSelection()" class="text-xs text-rose-600 font-bold hover:underline">Cambia Paziente</button>
+              <button onclick="clearPatientSelection()" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Cambia Paziente</button>
             </div>
             <h3 id="patient-card-name" class="text-2xl font-black text-slate-800 mb-3"></h3>
             <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
@@ -212,7 +251,7 @@
           </div>
         </div>
 
-        <!-- SCREEN 2: VACCINO -->
+        <!-- SCREEN 2 -->
         <div id="wizard-screen-2" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
           <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 2: Dettagli Somministrazione Vaccino</h2>
           
@@ -234,7 +273,7 @@
           </div>
         </div>
 
-        <!-- SCREEN 3: CONSENSO VACCINALE -->
+        <!-- SCREEN 3 -->
         <div id="wizard-screen-3" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
           <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Dichiarazione e Consenso Vaccinale</h2>
           
@@ -248,7 +287,6 @@
             </ul>
           </div>
 
-          <!-- SELEZIONE CONSENSO VACCINALE -->
           <div class="mb-6">
             <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso Somministrazione Vaccino:</label>
             <div class="grid grid-cols-2 gap-4">
@@ -264,7 +302,7 @@
           <div>
             <div class="flex justify-between items-center mb-2">
               <label class="font-bold text-sm text-slate-800">Firma 1 Paziente (Consenso Vaccinale)</label>
-              <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci Firma</button>
+              <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
             </div>
             <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
               <canvas id="canvas-patient-vaccino" width="600" height="180" class="w-full h-44 bg-white cursor-crosshair"></canvas>
@@ -272,7 +310,7 @@
           </div>
         </div>
 
-        <!-- SCREEN 4: BIOMETRIA & PRIVACY -->
+        <!-- SCREEN 4 -->
         <div id="wizard-screen-4" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
           <h2 class="text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 4: Consenso Dati Biometrici e GDPR</h2>
           
@@ -284,7 +322,6 @@
             </ul>
           </div>
 
-          <!-- SELEZIONE CONSENSO PRIVACY -->
           <div class="mb-6">
             <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso Trattamento Dati Personali e Biometrici:</label>
             <div class="grid grid-cols-2 gap-4">
@@ -301,7 +338,7 @@
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="font-bold text-xs text-slate-800">Firma 2 Paziente (Biometria)</label>
-                <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+                <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci</button>
               </div>
               <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
                 <canvas id="canvas-patient-biometrico" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
@@ -311,7 +348,7 @@
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="font-bold text-xs text-slate-800">Firma Operatore Sanitario</label>
-                <button onclick="clearCanvas('canvas-doctor')" class="text-xs text-rose-600 font-bold hover:underline">Pulisci</button>
+                <button onclick="clearCanvas('canvas-doctor')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci</button>
               </div>
               <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
                 <canvas id="canvas-doctor" width="400" height="150" class="w-full h-36 bg-white cursor-crosshair"></canvas>
@@ -320,7 +357,7 @@
           </div>
         </div>
 
-        <!-- SCREEN 5: CONFERMA -->
+        <!-- SCREEN 5 -->
         <div id="wizard-screen-5" class="wizard-screen hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-200 flex-grow">
           <h2 class="text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 5: Riepilogo Finale e Generazione PDF</h2>
           
@@ -331,7 +368,7 @@
           </button>
         </div>
 
-        <!-- Controlli Navigazione Wizard -->
+        <!-- Controls -->
         <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200">
           <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl hidden">
             ← Indietro
@@ -345,24 +382,24 @@
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- VISTA 2: GESTIONE LOTTI VACCINI (ESCLUSIVA MEDICO) -->
-    <!-- ======================================================== -->
+    <!-- VISTA GESTIONE LOTTI -->
     <div id="view-gestione-lotti" class="hidden p-4 sm:p-6 max-w-5xl mx-auto w-full space-y-6">
-      
-      <!-- Card Form Inserimento Nuovo Lotto -->
       <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
         <h2 class="text-xl font-bold text-sky-950 mb-4 flex items-center gap-2">
           <span>➕</span> Inserimento Nuovo Lotto Vaccino
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div class="sm:col-span-1">
-            <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Denominazione Vaccino</label>
-            <input type="text" id="new-vaccine-name" placeholder="es. Fluad Tetra, Vaxigrip..." class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none">
+            <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Denominazione</label>
+            <input type="text" id="new-vaccine-name" placeholder="es. Fluad Tetra..." class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none">
           </div>
           <div class="sm:col-span-1">
             <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Numero Lotto</label>
             <input type="text" id="new-vaccine-lotto" placeholder="es. LT-2026-99" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-mono">
+          </div>
+          <div class="sm:col-span-1">
+            <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Dosi Iniziali</label>
+            <input type="number" id="new-vaccine-dosi" placeholder="es. 50" min="1" value="50" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none">
           </div>
           <div class="sm:col-span-1 flex items-end">
             <button onclick="handleCreateVaccineBatch()" id="btn-add-vaccine" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20">
@@ -372,13 +409,12 @@
         </div>
       </div>
 
-      <!-- Tabella / Registro Lotti Vaccini -->
       <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
         <div class="flex justify-between items-center mb-4 border-b pb-3">
           <h2 class="text-xl font-bold text-sky-950 flex items-center gap-2">
             <span>📦</span> Registro Lotti Registrati
           </h2>
-          <button onclick="loadManagementVaccines()" class="text-xs font-bold text-sky-600 hover:underline">🔄 Aggiorna Lista</button>
+          <button onclick="loadManagementVaccines()" class="text-xs font-bold text-sky-600 hover:underline !min-h-0">🔄 Aggiorna Lista</button>
         </div>
 
         <div class="overflow-x-auto">
@@ -387,43 +423,37 @@
               <tr class="border-b border-slate-200 text-xs uppercase text-slate-500 bg-slate-50/50">
                 <th class="p-4 font-extrabold">Denominazione</th>
                 <th class="p-4 font-extrabold">N° Lotto</th>
+                <th class="p-4 font-extrabold text-center">Dosi Rimanenti</th>
                 <th class="p-4 font-extrabold">Stato</th>
                 <th class="p-4 font-extrabold text-right">Azione</th>
               </tr>
             </thead>
             <tbody id="management-vaccines-tbody" class="divide-y divide-slate-100 text-sm">
               <tr>
-                <td colspan="4" class="p-6 text-center text-slate-400 font-medium">Caricamento registro vaccini...</td>
+                <td colspan="5" class="p-6 text-center text-slate-400 font-medium">Caricamento registro vaccini...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-
     </div>
 
   </div>
 
-  <!-- ======================================================== -->
-  <!-- JAVASCRIPT APPLICATION LOGIC -->
-  <!-- ======================================================== -->
   <script>
-    // State Management
     let currentStep = 1;
     let selectedPatient = null;
     let availableVaccines = [];
     let currentUserRole = '';
     let searchDebounce = null;
     
-    // Stato dei Consensi (null = Non ancora selezionato)
     let consentState = {
-      consensoVaccino: null, // true (Acconsento) | false (Nego) | null
-      consensoPrivacy: null  // true (Acconsento) | false (Nego) | null
+      consensoVaccino: null,
+      consensoPrivacy: null
     };
 
     const canvasStates = { 'canvas-patient-vaccino': false, 'canvas-patient-biometrico': false, 'canvas-doctor': false };
 
-    // Promise Wrapper per Comunicazione Client-Server Asincrona
     function runServerFunction(functionName, ...args) {
       return new Promise((resolve, reject) => {
         google.script.run
@@ -432,7 +462,22 @@
       });
     }
 
-    // Feedback Notifiche Toast
+    function togglePasswordVisibility(inputId, btnEl) {
+      const input = document.getElementById(inputId);
+      const eyeOpen = btnEl.querySelector('.eye-open');
+      const eyeClosed = btnEl.querySelector('.eye-closed');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.classList.remove('hidden');
+        eyeClosed.classList.add('hidden');
+      } else {
+        input.type = 'password';
+        eyeOpen.classList.add('hidden');
+        eyeClosed.classList.remove('hidden');
+      }
+    }
+
     function showToast(text, type = 'success') {
       const bgColor = type === 'error' ? "linear-gradient(to right, #f43f5e, #e11d48)" : "linear-gradient(to right, #0ea5e9, #0284c7)";
       Toastify({
@@ -481,7 +526,6 @@
       }
     }
 
-    // Autenticazione Client
     async function handleLogin() {
       const email = document.getElementById('login-email').value;
       const pass = document.getElementById('login-password').value;
@@ -506,14 +550,15 @@
           document.getElementById('user-display-name').innerText = response.name;
           document.getElementById('user-display-role').innerText = `Ruolo: ${response.role}`;
 
-          // Gestione interfaccia basata sul RUOLO
           if (currentUserRole === 'medico') {
-            document.getElementById('doctor-nav-tabs').classList.remove('hidden');
+            document.getElementById('hub-btn-lotti').classList.remove('hidden');
+            document.getElementById('tab-btn-lotti').classList.remove('hidden');
           } else {
-            document.getElementById('doctor-nav-tabs').classList.add('hidden');
+            document.getElementById('hub-btn-lotti').classList.add('hidden');
+            document.getElementById('tab-btn-lotti').classList.add('hidden');
           }
 
-          switchAppTab('modulo');
+          switchAppTab('hub');
           initDashboard();
         } else {
           showToast(response.message, "error");
@@ -589,29 +634,40 @@
       showToast("Disconnessione effettuata");
     }
 
-    // Navigazione Tab Superiori per il Medico
     function switchAppTab(tab) {
+      const viewHub = document.getElementById('view-hub');
       const viewModulo = document.getElementById('view-modulo');
       const viewLotti = document.getElementById('view-gestione-lotti');
+
+      const btnHub = document.getElementById('tab-btn-hub');
       const btnModulo = document.getElementById('tab-btn-modulo');
       const btnLotti = document.getElementById('tab-btn-lotti');
 
-      if (tab === 'modulo') {
+      viewHub.classList.add('hidden');
+      viewModulo.classList.add('hidden');
+      viewLotti.classList.add('hidden');
+
+      const activeStyle = "px-4 py-2 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all !min-h-0";
+      const inactiveStyle = "px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0";
+
+      btnHub.className = inactiveStyle;
+      btnModulo.className = inactiveStyle;
+      btnLotti.className = inactiveStyle;
+
+      if (tab === 'hub') {
+        viewHub.classList.remove('hidden');
+        btnHub.className = activeStyle;
+      } else if (tab === 'modulo') {
         viewModulo.classList.remove('hidden');
-        viewLotti.classList.add('hidden');
-        btnModulo.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all";
-        btnLotti.className = "px-5 py-2.5 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all";
-        loadVaccines(); // Ricarica i vaccini attivi
+        btnModulo.className = activeStyle;
+        loadVaccines();
       } else if (tab === 'lotti') {
-        viewModulo.classList.add('hidden');
         viewLotti.classList.remove('hidden');
-        btnLotti.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all";
-        btnModulo.className = "px-5 py-2.5 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all";
-        loadManagementVaccines(); // Carica registro completo
+        btnLotti.className = activeStyle;
+        loadManagementVaccines();
       }
     }
 
-    // Gestione Pulsanti Consenso (Acconsento / Nego)
     function setConsentChoice(type, choice) {
       consentState[type] = choice;
 
@@ -628,7 +684,6 @@
       }
     }
 
-    // Gestione Wizard Modulo
     function initDashboard() {
       loadVaccines();
       setupCanvasPad('canvas-patient-vaccino');
@@ -647,7 +702,6 @@
       updateStepUI();
     }
 
-    // VALIDAZIONE E BLOCCO RIGIDO PROCEDURA
     function validateCurrentStep() {
       if (currentStep === 1 && !selectedPatient) {
         showToast("Seleziona un paziente prima di continuare", "error");
@@ -737,7 +791,6 @@
       document.getElementById('summary-content').innerHTML = html;
     }
 
-    // Ricerca Autocomplete Paziente
     function onPatientSearchInput(query) {
       clearTimeout(searchDebounce);
       const dropdown = document.getElementById('search-suggestions');
@@ -786,14 +839,13 @@
       document.getElementById('selected-patient-card').classList.add('hidden');
     }
 
-    // Caricamento Vaccini ATTIVI per la Tendina Modulo
     async function loadVaccines() {
       try {
         availableVaccines = await runServerFunction('getVaccineData') || [];
         const select = document.getElementById('vaccine-select');
         select.innerHTML = '<option value="">-- Seleziona Vaccino --</option>';
         availableVaccines.forEach((v, idx) => {
-          select.innerHTML += `<option value="${idx}">${v.denominazione} (Lotto: ${v.lotto})</option>`;
+          select.innerHTML += `<option value="${idx}">${v.denominazione} (Lotto: ${v.lotto} - Dosi: ${v.dosi})</option>`;
         });
       } catch (err) {
         showToast("Errore durante il caricamento dei vaccini", "error");
@@ -805,15 +857,15 @@
       document.getElementById('vaccine-lotto').value = (idx !== "" && availableVaccines[idx]) ? availableVaccines[idx].lotto : "";
     }
 
-    // LOGICA GESTIONE LOTTI VACCINI (MEDICO)
+    // GESTIONE LOTTI VACCINI (AGGIORNAMENTO PUNTUALE SENZA RELOAD TABELLA)
     async function loadManagementVaccines() {
       const tbody = document.getElementById('management-vaccines-tbody');
-      tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">Aggiornamento registro in corso...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Aggiornamento registro in corso...</td></tr>`;
 
       try {
         const list = await runServerFunction('getAllVaccinesForManagement') || [];
         if (list.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 italic">Nessun lotto vaccino presente nel database.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Nessun lotto vaccino presente nel database.</td></tr>`;
           return;
         }
 
@@ -825,41 +877,51 @@
             : "bg-emerald-100 text-emerald-800 border border-emerald-300";
 
           const tr = document.createElement('tr');
+          tr.id = `vaccine-row-${v.rowIndex}`;
           tr.className = "hover:bg-slate-50/80 transition-colors";
           tr.innerHTML = `
             <td class="p-4 font-bold text-slate-800">${v.denominazione}</td>
             <td class="p-4 font-mono font-bold text-slate-700">${v.lotto}</td>
-            <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-black uppercase ${badgeClass}">${v.stato}</span></td>
-            <td class="p-4 text-right">
+            <td class="p-4 text-center font-bold">
+              <input type="number" min="0" value="${v.dosi}" onchange="handleOverrideQuantity(${v.rowIndex}, this.value)" class="w-20 text-center border-2 border-slate-200 rounded-xl px-2 py-1 focus:border-sky-500 outline-none font-bold">
+            </td>
+            <td class="p-4"><span class="status-badge px-3 py-1 rounded-full text-xs font-black uppercase ${badgeClass}">${v.stato}</span></td>
+            <td class="p-4 text-right action-btn-container">
               ${!isCompleted ? `
-                <button onclick="handleMarkCompleted(${v.rowIndex})" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md">
-                  Marchia come Completato
+                <button onclick="handleToggleStatus(${v.rowIndex}, 'Completato')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
+                  Esaurito
                 </button>
-              ` : '<span class="text-xs font-bold text-slate-400 italic">Esaurito/Completato</span>'}
+              ` : `
+                <button onclick="handleToggleStatus(${v.rowIndex}, 'Attivo')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
+                  Ripristina come Disponibile
+                </button>
+              `}
             </td>
           `;
           tbody.appendChild(tr);
         });
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-rose-500 font-bold">Errore durante il caricamento del registro.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-rose-500 font-bold">Errore durante il caricamento del registro.</td></tr>`;
       }
     }
 
     async function handleCreateVaccineBatch() {
       const nameInput = document.getElementById('new-vaccine-name');
       const lottoInput = document.getElementById('new-vaccine-lotto');
+      const dosiInput = document.getElementById('new-vaccine-dosi');
       const btn = document.getElementById('btn-add-vaccine');
 
       const name = nameInput.value.trim();
       const lotto = lottoInput.value.trim();
+      const dosi = dosiInput.value;
 
-      if (!name || !lotto) return showToast("Inserisci sia la Denominazione che il Numero Lotto", "error");
+      if (!name || !lotto || !dosi) return showToast("Inserisci Denominazione, Lotto e Numero Dosi", "error");
 
       btn.innerText = "Salvataggio...";
       btn.disabled = true;
 
       try {
-        const res = await runServerFunction('addVaccineBatch', name, lotto);
+        const res = await runServerFunction('addVaccineBatch', name, lotto, dosi);
         btn.innerText = "Aggiungi Lotto";
         btn.disabled = false;
 
@@ -867,6 +929,7 @@
           showToast(res.message);
           nameInput.value = "";
           lottoInput.value = "";
+          dosiInput.value = "50";
           loadManagementVaccines();
         } else {
           showToast(res.message, "error");
@@ -878,23 +941,70 @@
       }
     }
 
-    async function handleMarkCompleted(rowIndex) {
-      if (!confirm("Sei sicuro di voler marchiare questo lotto come COMPLETATO?\nNon apparirà più tra i vaccini selezionabili per le nuove somministrazioni.")) return;
-
+    async function handleToggleStatus(rowIndex, newStatus) {
       try {
-        const res = await runServerFunction('markVaccineCompleted', rowIndex);
+        const res = await runServerFunction('toggleVaccineStatus', rowIndex, newStatus);
         if (res.success) {
           showToast(res.message);
-          loadManagementVaccines();
+          updateRowStatusUI(rowIndex, newStatus);
         } else {
           showToast(res.message, "error");
         }
       } catch (err) {
-        showToast("Errore nell'aggiornamento dello stato del lotto", "error");
+        showToast("Errore durante il cambio di stato del lotto", "error");
       }
     }
 
-    // Canvas Touch Pad
+    async function handleOverrideQuantity(rowIndex, newQuantity) {
+      try {
+        const res = await runServerFunction('updateVaccineQuantity', rowIndex, newQuantity);
+        if (res.success) {
+          showToast(res.message);
+          const qty = parseInt(newQuantity, 10) || 0;
+          updateRowStatusUI(rowIndex, qty === 0 ? 'Completato' : 'Attivo');
+        } else {
+          showToast(res.message, "error");
+        }
+      } catch (err) {
+        showToast("Errore nell'aggiornamento delle dosi", "error");
+      }
+    }
+
+    // Funzione helper per modificare unicamente gli elementi DOM della riga interessata
+    function updateRowStatusUI(rowIndex, status) {
+      const row = document.getElementById(`vaccine-row-${rowIndex}`);
+      if (!row) return;
+
+      const badgeEl = row.querySelector('.status-badge');
+      const actionBtnContainer = row.querySelector('.action-btn-container');
+      const isCompleted = (status || '').toLowerCase() === 'completato';
+
+      if (badgeEl) {
+        badgeEl.innerText = status;
+        badgeEl.className = `status-badge px-3 py-1 rounded-full text-xs font-black uppercase ${
+          isCompleted 
+            ? 'bg-slate-100 text-slate-600 border border-slate-300' 
+            : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+        }`;
+      }
+
+      if (actionBtnContainer) {
+        if (!isCompleted) {
+          actionBtnContainer.innerHTML = `
+            <button onclick="handleToggleStatus(${rowIndex}, 'Completato')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
+              Esaurito
+            </button>
+          `;
+        } else {
+          actionBtnContainer.innerHTML = `
+            <button onclick="handleToggleStatus(${rowIndex}, 'Attivo')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
+              Ripristina come Disponibile
+            </button>
+          `;
+        }
+      }
+    }
+
     function setupCanvasPad(canvasId) {
       const canvas = document.getElementById(canvasId);
       const ctx = canvas.getContext('2d');
@@ -948,7 +1058,6 @@
       canvasStates[canvasId] = false;
     }
 
-    // Invio Form Finale
     async function submitConsent() {
       const vSelect = document.getElementById('vaccine-select').value;
       const vData = availableVaccines[vSelect];
@@ -986,7 +1095,6 @@
         if (res.status === 'success') {
           showToast("Consenso registrato e PDF salvato con successo!");
           
-          // Reset completo
           clearPatientSelection();
           clearCanvas('canvas-patient-vaccino');
           clearCanvas('canvas-patient-biometrico');

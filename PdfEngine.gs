@@ -39,6 +39,10 @@ function submitConsentForm(formData) {
     });
 
     consensiSheet.appendRow(newRow);
+    
+    // Decrementa automaticamente 1 dose dal lotto vaccinale
+    decrementVaccineDose(formData.vaccinoDenominazione, formData.vaccinoLotto);
+
     logAction('Sistema', `Consenso salvato per ${formData.cognome} ${formData.nome}`);
     return { status: 'success', pdfUrl: pdfUrl };
 
@@ -62,23 +66,23 @@ function createPdfHtml(data) {
     <html>
     <head>
       <style>
-        @page { size: A4; margin: 12mm 15mm; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.35; margin: 0; }
-        .header-title { text-align: center; color: #1d4ed8; font-size: 16pt; font-weight: bold; border-bottom: 2px solid #1d4ed8; padding-bottom: 8px; margin-bottom: 15px; }
-        .section-block { page-break-inside: avoid; margin-bottom: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; }
-        .section-title { font-size: 11pt; font-weight: bold; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; }
-        .grid-2 { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        @page { size: A4; margin: 10mm 12mm; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.3; margin: 0; }
+        .header-title { text-align: center; color: #1d4ed8; font-size: 15pt; font-weight: bold; border-bottom: 2px solid #1d4ed8; padding-bottom: 6px; margin-bottom: 12px; }
+        .section-block { page-break-inside: avoid; margin-bottom: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; }
+        .section-title { font-size: 10.5pt; font-weight: bold; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; }
+        .grid-2 { display: flex; justify-content: space-between; margin-bottom: 4px; }
         .col { width: 48%; }
-        .col-full { width: 100%; margin-bottom: 5px; }
+        .col-full { width: 100%; margin-bottom: 4px; }
         .label { font-weight: bold; color: #475569; }
         .value { font-weight: 600; color: #0f172a; }
-        ul { margin: 4px 0 8px 18px; padding: 0; }
-        li { margin-bottom: 3px; text-align: justify; }
-        .statement-box { text-align: center; font-size: 10pt; font-weight: bold; color: #0f172a; background: #f1f5f9; padding: 6px; border-radius: 4px; margin-top: 6px; }
-        .signature-grid { display: flex; justify-content: space-between; margin-top: 10px; }
-        .signature-card { width: 31%; text-align: center; border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; background: #fafafa; }
-        .signature-card p { font-size: 8pt; font-weight: bold; margin: 0 0 4px 0; color: #334155; }
-        .signature-card img { max-width: 100%; height: 50px; object-fit: contain; border-bottom: 1px solid #94a3b8; }
+        ul { margin: 3px 0 6px 16px; padding: 0; }
+        li { margin-bottom: 2px; text-align: justify; }
+        .statement-box { text-align: center; font-size: 9.5pt; font-weight: bold; color: #0f172a; background: #f1f5f9; padding: 5px; border-radius: 4px; margin-top: 4px; }
+        .sig-container { margin-top: 8px; display: flex; justify-content: flex-end; }
+        .signature-box { width: 220px; text-align: center; border: 1px solid #cbd5e1; padding: 4px; border-radius: 6px; background: #fafafa; }
+        .signature-box p { font-size: 8pt; font-weight: bold; margin: 0 0 2px 0; color: #334155; }
+        .signature-box img { max-width: 100%; height: 42px; object-fit: contain; border-bottom: 1px solid #94a3b8; }
         .doctor-title { font-size: 7.5pt; font-style: italic; color: #64748b; margin-top: 2px; }
       </style>
     </head>
@@ -118,18 +122,35 @@ function createPdfHtml(data) {
           <div class="col"><span class="label">Lotto N:</span> <span class="value">${data.vaccinoLotto || ''}</span></div>
         </div>
         <div class="col-full"><span class="label">Luogo vaccinazione:</span> <span class="value">${data.luogoVaccinazione || ''}</span></div>
+        
+        <!-- FIRMA MEDICO/OPERATORE NELLA SEZIONE 3 -->
+        <div class="sig-container">
+          <div class="signature-box">
+            <p>Firma Operatore Sanitario</p>
+            <img src="${data.firmaMedico || ''}" />
+            <div class="doctor-title">Dott.ssa Arianna Baroni<br>Medico Chirurgo</div>
+          </div>
+        </div>
       </div>
 
       <div class="section-block">
         <div class="section-title">4. Dichiarazione e Consenso alla Vaccinazione</div>
         <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a dichiara di:</p>
         <ul>
-          <li>aver ricevuto e letto la scheda informativa sintetica relativa alla vaccinazione antinfluenzale;</li>
+          <li>aver ricevuto e letto la scheda informativa sintetica relativa alla vaccinazione;</li>
           <li>essere stato/a informato/a sui benefici e sui potenziali rischi della vaccinazione;</li>
           <li>aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
           <li>aver compreso le informazioni e di prestare il proprio consenso alla somministrazione.</li>
         </ul>
         <div class="statement-box">${consensoVaccinoText}</div>
+        
+        <!-- FIRMA 1 PAZIENTE NELLA SEZIONE 4 -->
+        <div class="sig-container">
+          <div class="signature-box">
+            <p>Firma 1 Paziente (Consenso Vaccino)</p>
+            <img src="${data.firmaPazienteVaccino || ''}" />
+          </div>
+        </div>
       </div>
 
       <div class="section-block">
@@ -140,28 +161,18 @@ function createPdfHtml(data) {
           <li>Verranno raccolti dati biometrici al solo scopo di garantire l'autenticità e la validità legale della firma elettronica.</li>
         </ul>
         <div class="statement-box">${consensoPrivacyText}</div>
-      </div>
-
-      <div class="section-block">
-        <div class="section-title">6. Sottoscrizione Digitale e Firme</div>
-        <div class="signature-grid">
-          <div class="signature-card">
-            <p>Firma 1: Consenso Vaccino</p>
-            <img src="${data.firmaPazienteVaccino || ''}" />
-          </div>
-          <div class="signature-card">
-            <p>Firma 2: Dati Biometrici</p>
+        
+        <!-- FIRMA 2 PAZIENTE NELLA SEZIONE 5 -->
+        <div class="sig-container">
+          <div class="signature-box">
+            <p>Firma 2 Paziente (Dati Biometrici)</p>
             <img src="${data.firmaPazienteBiometrico || ''}" />
           </div>
-          <div class="signature-card">
-            <p>Firma Operatore Sanitario</p>
-            <img src="${data.firmaMedico || ''}" />
-            <div class="doctor-title">Dott.ssa Arianna Baroni<br>Medico Chirurgo</div>
-          </div>
         </div>
-        <p style="font-size: 8pt; color: #64748b; margin: 8px 0 0 0;">
-          Data sottoscrizione: <strong>${new Date().toLocaleDateString('it-IT')} ${new Date().toLocaleTimeString('it-IT')}</strong>
-        </p>
+      </div>
+
+      <div style="font-size: 8pt; color: #64748b; text-align: right; margin-top: 4px;">
+        Data e ora sottoscrizione: <strong>${new Date().toLocaleDateString('it-IT')} ${new Date().toLocaleTimeString('it-IT')}</strong>
       </div>
     </body>
     </html>
