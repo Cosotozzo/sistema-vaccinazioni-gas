@@ -248,8 +248,8 @@
         </div>
       </div>
 
-      <!-- Area Contenuto Wizard Scorrevole -->
-      <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-grow overflow-y-auto pb-24">
+<!-- Area Contenuto Wizard Scorrevole -->
+      <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-grow overflow-y-auto">
         
         <!-- SCREEN 1 -->
         <div id="wizard-screen-1" class="wizard-screen bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
@@ -664,14 +664,14 @@
       }
     }
 
-    function showToast(text, type = 'success') {
+function showToast(text, type = 'success') {
       const bgColor = type === 'error' ? "linear-gradient(to right, #f43f5e, #e11d48)" : "linear-gradient(to right, #0ea5e9, #0284c7)";
       Toastify({
         text: text,
         duration: 4000,
-        gravity: "bottom",
+        gravity: "top",
         position: "center",
-        style: { background: bgColor, borderRadius: "16px", padding: "14px 20px", fontSize: "1rem", fontWeight: "600" }
+        style: { background: bgColor, borderRadius: "16px", padding: "14px 20px", fontSize: "1rem", fontWeight: "600", marginTop: "20px" }
       }).showToast();
     }
 
