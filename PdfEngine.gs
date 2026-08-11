@@ -4,6 +4,11 @@
 
 function submitConsentForm(formData) {
   try {
+    const isVaccineAccepted = formData.consensoVaccino === 'Acconsente';
+    const isGdprAccepted = formData.consensoPrivacy === 'Acconsente';
+    
+    let pdfUrl = '';
+
     const folderIter = DriveApp.getFoldersByName(PDF_FOLDER_NAME);
     const folder = folderIter.hasNext() ? folderIter.next() : DriveApp.createFolder(PDF_FOLDER_NAME);
 
@@ -12,8 +17,9 @@ function submitConsentForm(formData) {
     pdfBlob.setName(`Consenso_${formData.cognome}_${formData.nome}_${new Date().toISOString().slice(0,10)}.pdf`);
     
     const pdfFile = folder.createFile(pdfBlob);
-    const pdfUrl = pdfFile.getUrl();
+    pdfUrl = pdfFile.getUrl();
 
+    // Registrazione sul Foglio Consensi
     const consensiSheet = getDb().getSheetByName(SHEET_CONSENSI);
     const headers = consensiSheet.getRange(1, 1, 1, consensiSheet.getLastColumn()).getValues()[0];
     
@@ -26,11 +32,11 @@ function submitConsentForm(formData) {
         case 'codicefiscale': return formData.codicefiscale || '';
         case 'datanascita': return formData.datanascita || '';
         case 'denominazionevaccino': return formData.vaccinoDenominazione || '';
-        case 'numerolotto': return formData.vaccinoLotto || '';
+        case 'numerolotto': return isVaccineAccepted ? (formData.vaccinoLotto || '') : 'NON SOMMINISTRATO';
         case 'luogovaccinazione': return formData.luogoVaccinazione || '';
-        case 'esito': return 'Completato';
-        case 'consensosomministrazione': return formData.consensoVaccino === 'Acconsente' ? 'Sì' : 'No';
-        case 'consensoprivacy': return formData.consensoPrivacy === 'Acconsente' ? 'Sì' : 'No';
+        case 'esito': return isVaccineAccepted ? (isGdprAccepted ? 'Completato Digitale' : 'Completato Cartaceo') : 'Diniego/Rifiuto';
+        case 'consensoprivacy': return isGdprAccepted ? 'Sì' : 'No';
+        case 'consensosomministrazione': return isVaccineAccepted ? 'Sì' : 'No';
         case 'pdfurl': return pdfUrl;
         case 'hashpaziente': return formData.firmaPazienteVaccino ? 'Presente' : 'Mancante';
         case 'hashmedico': return formData.firmaMedico ? 'Presente' : 'Mancante';
@@ -40,11 +46,28 @@ function submitConsentForm(formData) {
 
     consensiSheet.appendRow(newRow);
     
-    // Decrementa 1 dose dal lotto vaccinale
-    decrementVaccineDose(formData.vaccinoDenominazione, formData.vaccinoLotto);
+    // REGOLA LOGICA DOSI:
+    // Se il vaccino è ACCONSENTITO (sia con GDPR che senza GDPR), scala 1 dose per allineare il magazzino.
+    // Se il vaccino è NEGATO, NON scalare dosi.
+    let isPaperRequired = false;
 
-    logAction('Sistema', `Consenso salvato per ${formData.cognome} ${formData.nome}`);
-    return { status: 'success', pdfUrl: pdfUrl };
+    if (isVaccineAccepted) {
+      decrementVaccineDose(formData.vaccinoDenominazione, formData.vaccinoLotto);
+      if (!isGdprAccepted) {
+        isPaperRequired = true;
+      }
+    }
+
+    logAction('Sistema', `Modulo registrato per ${formData.cognome} ${formData.nome} (Vaccino: ${formData.consensoVaccino}, GDPR: ${formData.consensoPrivacy})`);
+    
+    return { 
+      status: 'success', 
+      pdfUrl: pdfUrl,
+      isPaperRequired: isPaperRequired,
+      message: isPaperRequired 
+        ? "Dose scalata dal magazzino. NECESSARIA FIRMA SU MODULO CARTACEO." 
+        : "Operazione completata e registrata con successo."
+    };
 
   } catch (error) {
     Logger.log(error.toString());
@@ -116,43 +139,7 @@ function createPdfHtml(data) {
       </div>
 
       <div class="section-block">
-        <div class="section-title">3. Dati a cura dell'Operatore Sanitario</div>
-        <div class="grid-2">
-          <div class="col"><span class="label">Nome vaccino:</span> <span class="value">${data.vaccinoDenominazione || ''}</span></div>
-          <div class="col"><span class="label">Lotto N:</span> <span class="value">${data.vaccinoLotto || ''}</span></div>
-        </div>
-        <div class="col-full"><span class="label">Luogo vaccinazione:</span> <span class="value">${data.luogoVaccinazione || ''}</span></div>
-        
-        <div class="sig-container">
-          <div class="signature-box">
-            <p>Firma Operatore Sanitario</p>
-            <img src="${data.firmaMedico || ''}" />
-            <div class="doctor-title">Dott.ssa Arianna Baroni<br>Medico Chirurgo</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-block">
-        <div class="section-title">4. Dichiarazione e Consenso alla Vaccinazione</div>
-        <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a dichiara di:</p>
-        <ul>
-          <li>aver ricevuto e letto la scheda informativa sintetica relativa alla vaccinazione;</li>
-          <li>essere stato/a informato/a sui benefici e sui potenziali rischi della vaccinazione;</li>
-          <li>aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
-          <li>aver compreso le informazioni e di prestare il proprio consenso alla somministrazione.</li>
-        </ul>
-        <div class="statement-box">${consensoVaccinoText}</div>
-        
-        <div class="sig-container">
-          <div class="signature-box">
-            <p>Firma 1 Paziente (Consenso Vaccino)</p>
-            <img src="${data.firmaPazienteVaccino || ''}" />
-          </div>
-        </div>
-      </div>
-
-      <div class="section-block">
-        <div class="section-title">5. Consenso al Trattamento Dati Personali e Biometrici (GDPR)</div>
+        <div class="section-title">3. Consenso al Trattamento Dati Personali e Biometrici (GDPR)</div>
         <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a, ai sensi del Regolamento UE 2016/679, dichiara che:</p>
         <ul>
           <li>I dati personali e sanitari saranno trattati esclusivamente per finalità connesse alla prestazione sanitaria.</li>
@@ -162,8 +149,38 @@ function createPdfHtml(data) {
         
         <div class="sig-container">
           <div class="signature-box">
-            <p>Firma 2 Paziente (Dati Biometrici)</p>
+            <p>Firma Paziente (GDPR / Privacy)</p>
             <img src="${data.firmaPazienteBiometrico || ''}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title">4. Dati e Consenso alla Vaccinazione</div>
+        <div class="grid-2">
+          <div class="col"><span class="label">Nome vaccino:</span> <span class="value">${data.vaccinoDenominazione || ''}</span></div>
+          <div class="col"><span class="label">Lotto N:</span> <span class="value">${data.vaccinoLotto || ''}</span></div>
+        </div>
+        <div class="col-full" style="margin-bottom: 8px;"><span class="label">Luogo vaccinazione:</span> <span class="value">${data.luogoVaccinazione || ''}</span></div>
+        
+        <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a dichiara di:</p>
+        <ul>
+          <li>aver ricevuto e letto la scheda informativa sintetica relativa alla vaccinazione;</li>
+          <li>essere stato/a informato/a sui benefici e sui potenziali rischi della vaccinazione;</li>
+          <li>aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
+          <li>aver compreso le informazioni e di prestare il proprio consenso alla somministrazione.</li>
+        </ul>
+        <div class="statement-box">${consensoVaccinoText}</div>
+        
+        <div class="sig-container" style="justify-content: space-between;">
+          <div class="signature-box">
+            <p>Firma Operatore Sanitario</p>
+            <img src="${data.firmaMedico || ''}" />
+            <div class="doctor-title">Dott.ssa Arianna Baroni<br>Medico Chirurgo</div>
+          </div>
+          <div class="signature-box">
+            <p>Firma Paziente (Consenso Vaccino)</p>
+            <img src="${data.firmaPazienteVaccino || ''}" />
           </div>
         </div>
       </div>

@@ -1,10 +1,12 @@
 /**
- * Auth.gs - Modulo di Autenticazione e Sicurezza (Email Case-Insensitive, Password Case-Sensitive)
+ * Auth.gs - Modulo di Autenticazione e Sicurezza
  */
 
 function checkLogin(email, password) {
+  // Username CASE-INSENSITIVE
   const cleanEmail = (email || '').toString().toLowerCase().trim();
-  const inputHash = hashPassword(password); // La password rimane case-sensitive
+  // Password CASE-SENSITIVE
+  const inputHash = hashPassword(password); 
   
   const sheet = getDb().getSheetByName(SHEET_ACCOUNTS);
   const data = sheet.getDataRange().getValues();
@@ -17,56 +19,42 @@ function checkLogin(email, password) {
       const fullName = `${data[i][0]} ${data[i][1]}`;
       const role = (data[i][4] || '').toString().toLowerCase().trim();
       
-      // BLOCCO ACCESSO: Se il ruolo non è assegnato dall'Amministratore
-      if (!role) {
-        logAction(fullName, 'Tentativo di login fallito: Ruolo non ancora assegnato');
+      // Controllo Ruolo: Se non è assegnato 'medico' o 'segretario'
+      if (role !== 'medico' && role !== 'segretario') {
+        logAction(fullName, 'Login bloccato: Ruolo non autorizzato');
         return { 
           success: false, 
-          message: 'Account registrato ma non ancora abilitato. In attesa di assegnazione del ruolo da parte dell\'Amministratore.' 
+          isUnauthorized: true, // Questo flag attiva la schermata specifica lato Frontend
+          message: 'Utenza non autorizzata.' 
         };
       }
       
       logAction(fullName, `Login effettuato (Ruolo: ${role})`);
-      return { 
-        success: true, 
-        name: fullName, 
-        role: role 
-      };
+      return { success: true, name: fullName, role: role };
     }
   }
-  return { success: false, message: 'Credenziali non valide o account inesistente.' };
+  return { success: false, isUnauthorized: false, message: 'Credenziali non valide o account inesistente.' };
 }
 
 function registerUser(nome, cognome, email, password, confirmPassword) {
-  if (password !== confirmPassword) {
-    return { success: false, message: 'Le due password non coincidono.' };
-  }
-
-  if (!validatePasswordRules(password)) {
-    return { success: false, message: 'La password deve contenere almeno 8 caratteri, 1 carattere speciale e almeno 2 numeri.' };
-  }
+  if (password !== confirmPassword) return { success: false, message: 'Le password non coincidono.' };
+  if (!validatePasswordRules(password)) return { success: false, message: 'La password non rispetta i requisiti di sicurezza.' };
 
   const cleanEmail = (email || '').toString().toLowerCase().trim();
   const sheet = getDb().getSheetByName(SHEET_ACCOUNTS);
   const data = sheet.getDataRange().getValues();
   
-  // Controllo duplicati case-insensitive
   for (let i = 1; i < data.length; i++) {
-    const dbEmail = (data[i][2] || '').toString().toLowerCase().trim();
-    if (dbEmail === cleanEmail) {
+    if ((data[i][2] || '').toString().toLowerCase().trim() === cleanEmail) {
       return { success: false, message: 'Indirizzo email già registrato.' };
     }
   }
   
   const hashedPass = hashPassword(password);
-  // Salviamo l'email già normalizzata in minuscolo sul DB
   sheet.appendRow([nome, cognome, cleanEmail, hashedPass, '']);
-  logAction(`${nome} ${cognome}`, 'Registrazione nuova utenza (In attesa di attivazione)');
+  logAction(`${nome} ${cognome}`, 'Registrazione nuova utenza');
   
-  return { 
-    success: true, 
-    message: 'Registrazione completata! Il tuo account sarà attivo non appena l\'Amministratore assegnerà il ruolo dal database.' 
-  };
+  return { success: true, message: 'Registrazione completata! In attesa di approvazione.' };
 }
 
 function recoverPassword(email) {
@@ -75,23 +63,14 @@ function recoverPassword(email) {
   const data = sheet.getDataRange().getValues();
   
   for (let i = 1; i < data.length; i++) {
-    const dbEmail = (data[i][2] || '').toString().toLowerCase().trim();
-    if (dbEmail === cleanEmail) {
-      const fullName = `${data[i][0]} ${data[i][1]}`;
+    if ((data[i][2] || '').toString().toLowerCase().trim() === cleanEmail) {
       const tempPass = Math.random().toString(36).slice(-8) + "12!"; 
-      const tempHash = hashPassword(tempPass);
-      
-      sheet.getRange(i + 1, 4).setValue(tempHash);
-      
-      const subject = "Reset Accesso - Studio Medico";
-      const body = `Gentile ${fullName},\n\nLa tua nuova password temporanea è: ${tempPass}\n\nAmministrazione Studio Medico`;
-      
-      GmailApp.sendEmail(cleanEmail, subject, body);
-      logAction(fullName, 'Richiesta reset password');
+      sheet.getRange(i + 1, 4).setValue(hashPassword(tempPass));
+      GmailApp.sendEmail(cleanEmail, "Reset Accesso", `La tua password temporanea è: ${tempPass}`);
       return { success: true, message: 'Password temporanea inviata via email.' };
     }
   }
-  return { success: false, message: 'Email non trovata nel database.' };
+  return { success: false, message: 'Email non trovata.' };
 }
 
 function hashPassword(password) {
@@ -109,6 +88,5 @@ function hashPassword(password) {
 function validatePasswordRules(password) {
   const numbersCount = (password.match(/\d/g) || []).length;
   const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password);
-  const isLongEnough = password.length >= 8;
-  return numbersCount >= 2 && hasSpecial && isLongEnough;
+  return numbersCount >= 2 && hasSpecial && password.length >= 8;
 }

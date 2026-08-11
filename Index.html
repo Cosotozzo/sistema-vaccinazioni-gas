@@ -12,14 +12,10 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   
   <style>
-    /* Forza la priorità della classe hidden contro eventuali override */
     .hidden { display: none !important; }
-
-    /* Rimozione scrollbar visibili */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Touch Target per Tablet (min. 48px) */
     button, .btn-touch, input, select { 
       min-height: 48px; 
       font-size: 1rem; 
@@ -44,9 +40,7 @@
 </head>
 <body class="bg-medical text-slate-800 font-sans antialiased selection:bg-sky-200">
 
-  <!-- ======================================================== -->
   <!-- MODULO AUTENTICAZIONE -->
-  <!-- ======================================================== -->
   <div id="auth-module" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white/95 backdrop-blur-md p-6 sm:p-10 rounded-3xl shadow-2xl w-full max-w-xl border border-sky-100">
       
@@ -154,14 +148,13 @@
   <!-- APPLICATION CONTAINER -->
   <div id="main-app" class="hidden h-screen w-full flex flex-col bg-slate-100 overflow-hidden">
     
-    <!-- Top Bar Responsiva con Horizontal Scroll -->
+    <!-- Top Bar Responsiva -->
     <div class="bg-sky-950 text-white shadow-md px-4 sm:px-6 py-3 flex justify-between items-center gap-2 shrink-0 z-20">
       <div onclick="switchAppTab('hub')" class="font-bold text-lg sm:text-xl flex items-center gap-2 cursor-pointer shrink-0">
         <span class="p-2 bg-sky-800 rounded-xl text-base sm:text-lg">💉</span>
         <span class="hidden xs:inline">Sistema Vaccinale</span>
       </div>
 
-      <!-- Tab di Navigazione Orizzontali -->
       <div id="doctor-nav-tabs" class="flex gap-1.5 bg-sky-900/60 p-1.5 rounded-2xl border border-sky-800 overflow-x-auto no-scrollbar max-w-[55vw] sm:max-w-none">
         <button id="tab-btn-hub" onclick="switchAppTab('hub')" class="px-3 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm text-sky-200 hover:text-white transition-all whitespace-nowrap !min-h-0">
           🏠 Home
@@ -232,12 +225,12 @@
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-3" class="step-node flex items-center gap-1.5 text-slate-400">
             <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">3</span>
-            <span>Consenso</span>
+            <span>GDPR</span>
           </div>
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-4" class="step-node flex items-center gap-1.5 text-slate-400">
             <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">4</span>
-            <span>Biometria</span>
+            <span>Consenso</span>
           </div>
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-5" class="step-node flex items-center gap-1.5 text-slate-400">
@@ -301,16 +294,50 @@
           </div>
         </div>
 
-        <!-- SCREEN 3 -->
+        <!-- SCREEN 3: GDPR E FIRMA PAZIENTE -->
         <div id="wizard-screen-3" class="wizard-screen hidden bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
-          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Dichiarazione e Consenso Vaccinale</h2>
+          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Accettazione GDPR e Consenso Firma Digitale</h2>
           
           <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
-            <p class="font-bold text-slate-900">Il/La sottoscritto/a dichiara di:</p>
+            <p class="font-bold text-slate-900">Informativa Trattamento Dati e Biometria (Regolamento UE 2016/679):</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>I dati sanitari saranno trattati esclusivamente per la prestazione sanitaria.</li>
+              <li>Verranno raccolti dati biometrici di firma al solo scopo di garantire l'autenticità e la validità legale della firma elettronica.</li>
+            </ul>
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso GDPR e Firma Digitale:</label>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4">
+              <button type="button" onclick="setConsentChoice('consensoPrivacy', true)" id="btn-privacy-yes" class="btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all">
+                ✓ ACCONSENTO
+              </button>
+              <button type="button" onclick="setConsentChoice('consensoPrivacy', false)" id="btn-privacy-no" class="btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all">
+                ✕ NEGO
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Paziente (GDPR / Privacy)</label>
+              <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
+            </div>
+            <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
+              <canvas id="canvas-patient-biometrico" class="w-full h-40 bg-white cursor-crosshair"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCREEN 4: CONSENSO VACCINO (FIRMA PAZIENTE + FIRMA MEDICO) -->
+        <div id="wizard-screen-4" class="wizard-screen hidden bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
+          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 4: Modulo Consenso Vaccinale</h2>
+          
+          <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
+            <p class="font-bold text-slate-900">Dichiarazione del Paziente:</p>
             <ul class="list-disc pl-5 space-y-1">
               <li>Aver ricevuto e letto la scheda informativa sintetica antinfluenzale;</li>
               <li>Essere stato/a informato/a su benefici e rischi della vaccinazione;</li>
-              <li>Aver avuto la possibilità di porre domande e di ricevere risposte adeguate;</li>
               <li>Aver compreso le informazioni e di esprimere la propria volontà.</li>
             </ul>
           </div>
@@ -327,60 +354,24 @@
             </div>
           </div>
 
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Paziente (Consenso Vaccinale)</label>
-              <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
-            </div>
-            <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
-              <canvas id="canvas-patient-vaccino" class="w-full h-40 sm:h-44 bg-white cursor-crosshair"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- SCREEN 4 -->
-        <div id="wizard-screen-4" class="wizard-screen hidden bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
-          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 4: Consenso Dati Biometrici e GDPR</h2>
-          
-          <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
-            <p class="font-bold text-slate-900">Informativa Trattamento Dati (Regolamento UE 2016/679):</p>
-            <ul class="list-disc pl-5 space-y-1">
-              <li>I dati sanitari saranno trattati esclusivamente per la prestazione sanitaria.</li>
-              <li>Verranno raccolti dati biometrici al solo scopo di garantire la validità legale della firma elettronica.</li>
-            </ul>
-          </div>
-
-          <div class="mb-5">
-            <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso Trattamento Dati Personali e Biometrici:</label>
-            <div class="grid grid-cols-2 gap-3 sm:gap-4">
-              <button type="button" onclick="setConsentChoice('consensoPrivacy', true)" id="btn-privacy-yes" class="btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all">
-                ✓ ACCONSENTO
-              </button>
-              <button type="button" onclick="setConsentChoice('consensoPrivacy', false)" id="btn-privacy-no" class="btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all">
-                ✕ NEGO
-              </button>
-            </div>
-          </div>
-
-          <!-- Disposizione Firme Verticale -->
-          <div class="space-y-6">
+          <div class="space-y-5">
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Paziente (Consenso Biometrico / GDPR)</label>
-                <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
+                <label class="font-bold text-xs sm:text-sm text-slate-800">1. Firma Paziente (Consenso Vaccinale)</label>
+                <button onclick="clearCanvas('canvas-patient-vaccino')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
               </div>
               <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
-                <canvas id="canvas-patient-biometrico" class="w-full h-40 bg-white cursor-crosshair"></canvas>
+                <canvas id="canvas-patient-vaccino" class="w-full h-36 bg-white cursor-crosshair"></canvas>
               </div>
             </div>
 
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Operatore Sanitario</label>
+                <label class="font-bold text-xs sm:text-sm text-slate-800">2. Firma Operatore Sanitario (Medico)</label>
                 <button onclick="clearCanvas('canvas-doctor')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
               </div>
               <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
-                <canvas id="canvas-doctor" class="w-full h-40 bg-white cursor-crosshair"></canvas>
+                <canvas id="canvas-doctor" class="w-full h-36 bg-white cursor-crosshair"></canvas>
               </div>
             </div>
           </div>
@@ -388,18 +379,25 @@
 
         <!-- SCREEN 5 -->
         <div id="wizard-screen-5" class="wizard-screen hidden bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
-          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 5: Riepilogo Finale e Generazione PDF</h2>
+          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-4 border-b pb-2">Passo 5: Riepilogo Finale e Conferma</h2>
           
           <div id="summary-content" class="bg-sky-50/60 border border-sky-200 p-4 sm:p-5 rounded-2xl space-y-2.5 text-xs sm:text-sm mb-6"></div>
 
+          <div id="paper-warning-box" class="hidden p-4 mb-6 bg-amber-50 border-2 border-amber-400 rounded-2xl text-amber-900 text-xs sm:text-sm">
+            <div class="font-black text-amber-900 text-sm mb-1 flex items-center gap-1.5">
+              ⚠️ ATTENZIONE - MODULO CARTACEO OBBLIGATORIO
+            </div>
+            <span>Il consenso GDPR/Firma Digitale è stato NEGATO. Procedendo, la dose verrà comunque **scalata dal magazzino**, ma è **OBBLIGATORIO far firmare al paziente il modulo cartaceo**.</span>
+          </div>
+
           <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-lg sm:text-xl shadow-xl shadow-emerald-600/30">
-            Registra Consenso e Genera PDF
+            Conferma e Salva Scheda
           </button>
         </div>
 
       </div>
 
-      <!-- Sticky Toolbar del Wizard (Gestione visibilità con classe .hidden corretta) -->
+      <!-- Sticky Toolbar del Wizard -->
       <div id="wizard-sticky-toolbar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 sm:p-4 z-30 shadow-2xl flex justify-between items-center max-w-4xl mx-auto">
         <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-5 sm:px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl text-sm hidden">
           ← Indietro
@@ -993,14 +991,14 @@
         }
       }
       if (currentStep === 3) {
-        if (consentState.consensoVaccino === null) {
-          showToast("Devi selezionare ACCONSENTO o NEGO per proseguire", "error");
+        if (consentState.consensoPrivacy === null) {
+          showToast("Devi selezionare ACCONSENTO o NEGO per la privacy/biometria", "error");
           return false;
         }
       }
       if (currentStep === 4) {
-        if (consentState.consensoPrivacy === null) {
-          showToast("Devi selezionare ACCONSENTO o NEGO per la privacy/biometria", "error");
+        if (consentState.consensoVaccino === null) {
+          showToast("Devi selezionare ACCONSENTO o NEGO per il vaccino per proseguire", "error");
           return false;
         }
       }
@@ -1027,7 +1025,6 @@
 
       document.getElementById(`wizard-screen-${currentStep}`).classList.remove('hidden');
 
-      // Gestione corretta dei pulsanti del wizard
       const btnPrev = document.getElementById('btn-prev-step');
       const btnNext = document.getElementById('btn-next-step');
 
@@ -1053,19 +1050,26 @@
 
       const vaccinoStatusHtml = consentState.consensoVaccino 
         ? `<span class="text-emerald-700 font-extrabold">✓ ACCONSENTE</span>`
-        : `<span class="text-rose-600 font-extrabold">✕ NON ACCONSENTE</span>`;
+        : `<span class="text-rose-600 font-extrabold">✕ NEGO (Somministrazione NON effettuata)</span>`;
 
       const privacyStatusHtml = consentState.consensoPrivacy 
         ? `<span class="text-emerald-700 font-extrabold">✓ ACCONSENTE</span>`
-        : `<span class="text-rose-600 font-extrabold">✕ NON ACCONSENTE</span>`;
+        : `<span class="text-rose-600 font-extrabold">✕ NEGO (Richiesta firma cartacea)</span>`;
+
+      const warningBox = document.getElementById('paper-warning-box');
+      if (consentState.consensoPrivacy === false && consentState.consensoVaccino === true) {
+        warningBox.classList.remove('hidden');
+      } else {
+        warningBox.classList.add('hidden');
+      }
 
       const html = `
         <div class="font-bold text-sm sm:text-base text-sky-900 border-b border-sky-200 pb-2 mb-2">Riepilogo Scheda Vaccinale</div>
         <p><strong>Paziente:</strong> ${selectedPatient ? `${selectedPatient.cognome} ${selectedPatient.nome} (CF: ${selectedPatient.codicefiscale})` : 'Non selezionato'}</p>
         <p><strong>Vaccino:</strong> ${vData.denominazione} | <strong>Lotto:</strong> ${vData.lotto}</p>
         <p><strong>Luogo:</strong> ${document.getElementById('vaccine-location').value}</p>
-        <p><strong>Consenso Vaccinazione:</strong> ${vaccinoStatusHtml}</p>
-        <p><strong>Consenso Dati Biometrici/GDPR:</strong> ${privacyStatusHtml}</p>
+        <p><strong>Consenso GDPR & Biometria (Passo 3):</strong> ${privacyStatusHtml}</p>
+        <p><strong>Consenso Vaccinazione (Passo 4):</strong> ${vaccinoStatusHtml}</p>
       `;
       document.getElementById('summary-content').innerHTML = html;
     }
@@ -1343,13 +1347,11 @@
 
     async function submitConsent() {
       const btn = document.getElementById('btn-submit-consent');
-      btn.innerText = "Salvataggio e generazione PDF in corso...";
+      btn.innerText = "Salvataggio in corso...";
       btn.disabled = true;
 
       try {
-        if (!selectedPatient) {
-          throw new Error("Seleziona un paziente prima di salvare");
-        }
+        if (!selectedPatient) throw new Error("Seleziona un paziente prima di salvare");
 
         const vSelect = document.getElementById('vaccine-select').value;
         const vData = (vSelect !== "" && availableVaccines[vSelect]) 
@@ -1370,27 +1372,30 @@
           vaccinoDenominazione: vData.denominazione || '',
           vaccinoLotto: vData.lotto || '',
           luogoVaccinazione: document.getElementById('vaccine-location').value || 'STUDIO/AMBULATORIO',
-          consensoVaccino: consentState.consensoVaccino ? 'Acconsente' : 'Non acconsente',
           consensoPrivacy: consentState.consensoPrivacy ? 'Acconsente' : 'Non acconsente',
-          firmaPazienteVaccino: canvasStates['canvas-patient-vaccino'] ? document.getElementById('canvas-patient-vaccino').toDataURL('image/png') : '',
+          consensoVaccino: consentState.consensoVaccino ? 'Acconsente' : 'Non acconsente',
           firmaPazienteBiometrico: canvasStates['canvas-patient-biometrico'] ? document.getElementById('canvas-patient-biometrico').toDataURL('image/png') : '',
+          firmaPazienteVaccino: canvasStates['canvas-patient-vaccino'] ? document.getElementById('canvas-patient-vaccino').toDataURL('image/png') : '',
           firmaMedico: canvasStates['canvas-doctor'] ? document.getElementById('canvas-doctor').toDataURL('image/png') : ''
         };
 
         const res = await runServerFunction('submitConsentForm', formData);
 
         if (res && res.status === 'success') {
-          showToast("Consenso salvato e PDF generato con successo!");
+          if (res.isPaperRequired) {
+            alert("⚠️ ATTENZIONE PER IL MEDICO:\n\nGDPR/Firma Digitale NEGATO.\nLa dose è stata scalata dal magazzino, ma è OBBLIGATORIO far firmare il MODULO CARTACEO al paziente.");
+          }
+          showToast(res.message || "Scheda salvata con successo!");
           resetModuloWizard();
           switchAppTab('report');
         } else {
-          throw new Error(res ? res.message : "Errore sconosciuto nel salvataggio");
+          throw new Error(res ? res.message : "Errore durante il salvataggio");
         }
       } catch (err) {
         console.error(err);
         showToast(`Errore: ${err.message || err}`, "error");
       } finally {
-        btn.innerText = "Registra Consenso e Genera PDF";
+        btn.innerText = "Conferma e Salva Scheda";
         btn.disabled = false;
       }
     }
