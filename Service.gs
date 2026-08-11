@@ -229,12 +229,13 @@ function getPatientSuggestions(searchTerm) {
   const CACHE_KEY_HEADER = 'patient_data_header';
   const CACHE_KEY_PREFIX = 'patient_data_chunk_';
   const CACHE_KEY_COUNT = 'patient_data_chunk_count';
-  let data = [];
+let data = [];
 
   const chunkCountStr = cache.get(CACHE_KEY_COUNT);
+  const cachedHeader = cache.get(CACHE_KEY_HEADER);
 
-  if (chunkCountStr) {
-    const headerRow = JSON.parse(cache.get(CACHE_KEY_HEADER));
+  if (chunkCountStr && cachedHeader) {
+    const headerRow = JSON.parse(cachedHeader);
     if (headerRow) {
       const chunkCount = parseInt(chunkCountStr, 10);
       const keys = [];
@@ -261,13 +262,13 @@ function getPatientSuggestions(searchTerm) {
     const chunks = {};
     let count = 0;
 
-    for (let i = 0; i < patientRows.length; i += CHUNK_SIZE) {
+for (let i = 0; i < patientRows.length; i += CHUNK_SIZE) {
       chunks[CACHE_KEY_PREFIX + count] = JSON.stringify(patientRows.slice(i, i + CHUNK_SIZE));
       count++;
     }
     chunks[CACHE_KEY_COUNT] = count.toString();
     chunks[CACHE_KEY_HEADER] = JSON.stringify(headerRow);
-    cache.putAll(chunks, 21600);
+    cache.putAll(chunks, 300); 
     data = [headerRow].concat(patientRows);
   }
 

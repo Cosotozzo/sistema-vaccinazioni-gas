@@ -10,11 +10,12 @@ function submitConsentForm(formData) {
     let pdfUrl = '';
 
     const folderIter = DriveApp.getFoldersByName(PDF_FOLDER_NAME);
-    const folder = folderIter.hasNext() ? folderIter.next() : DriveApp.createFolder(PDF_FOLDER_NAME);
+const folder = folderIter.hasNext() ? folderIter.next() : DriveApp.createFolder(PDF_FOLDER_NAME);
 
+    const localDateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     const htmlForPdf = createPdfHtml(formData);
     const pdfBlob = Utilities.newBlob(htmlForPdf, MimeType.HTML).getAs(MimeType.PDF);
-    pdfBlob.setName(`Consenso_${formData.cognome}_${formData.nome}_${new Date().toISOString().slice(0,10)}.pdf`);
+    pdfBlob.setName(`Consenso_${formData.cognome}_${formData.nome}_${localDateStr}.pdf`);
     
     const pdfFile = folder.createFile(pdfBlob);
     pdfUrl = pdfFile.getUrl();

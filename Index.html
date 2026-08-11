@@ -146,7 +146,7 @@
       <div id="unauthorized-section" class="hidden text-center space-y-4 py-8">
         <div class="text-rose-500 text-5xl mb-4">🚫</div>
         <h2 class="text-2xl font-black text-slate-800">Accesso Negato</h2>
-        <p class="text-slate-600 font-medium">L'utenza non è stata autorizzata. Contattare l'amministratore del database per l'assegnazione del ruolo (Medico o Segretario).</p>
+        <p class="text-slate-600 font-medium">L'utenza non è stata autorizzata. Contattare l'amministratore.</p>
         <button onclick="toggleAuthSection('login-section')" class="btn-touch mt-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl px-6 py-2">Torna al Login</button>
       </div>
 
@@ -558,8 +558,28 @@
           </table>
         </div>
       </div>
-    </div>
+</div>
 
+  </div>
+
+  <!-- MODAL ATTENZIONE CARTACEO -->
+  <div id="modal-paper-warning" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border-4 border-amber-400 transform transition-all">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-50 text-amber-500 mb-4 shadow-inner">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-black text-slate-800 mb-2">Attenzione per il Medico</h3>
+        <div class="text-slate-600 font-medium text-sm sm:text-base space-y-2 mb-6">
+          <p class="font-bold text-rose-600">GDPR/Firma Digitale NEGATO.</p>
+          <p>La dose è stata scalata dal magazzino, ma è <strong>OBBLIGATORIO</strong> far firmare il <strong>MODULO CARTACEO</strong> al paziente.</p>
+        </div>
+        <!-- Il bottone chiude direttamente la modale rimuovendola dalla vista -->
+        <button onclick="document.getElementById('modal-paper-warning').classList.add('hidden')" class="btn-touch w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl text-lg px-6 py-3 shadow-lg shadow-amber-500/30">
+          Ho Capito
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1345,9 +1365,10 @@ function resizeAllCanvases() {
           x: (clientX - rect.left) * (canvas.width / rect.width),
           y: (clientY - rect.top) * (canvas.height / rect.height)
         };
-      }
+}
 
       function startDraw(e) {
+        if (e.cancelable) e.preventDefault();
         isDrawing = true;
         const pos = getPos(e);
         ctx.beginPath();
@@ -1412,12 +1433,12 @@ function resizeAllCanvases() {
         const res = await runServerFunction('submitConsentForm', formData);
 
         if (res && res.status === 'success') {
-          if (res.isPaperRequired) {
+if (res.isPaperRequired) {
             alert("⚠️ ATTENZIONE PER IL MEDICO:\n\nGDPR/Firma Digitale NEGATO.\nLa dose è stata scalata dal magazzino, ma è OBBLIGATORIO far firmare il MODULO CARTACEO al paziente.");
           }
           showToast(res.message || "Scheda salvata con successo!");
-          resetModuloWizard();
-          switchAppTab('report');
+          // Rimanda al modulo iniziale (la funzione switchAppTab si occuperà in automatico di resettare i campi)
+          switchAppTab('modulo');
         } else {
           throw new Error(res ? res.message : "Errore durante il salvataggio");
         }
