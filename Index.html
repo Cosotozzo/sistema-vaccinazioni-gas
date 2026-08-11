@@ -168,13 +168,13 @@
           🏠 Home
         </button>
         <button id="tab-btn-modulo" onclick="switchAppTab('modulo')" class="px-3 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm text-sky-200 hover:text-white transition-all whitespace-nowrap !min-h-0">
-          📋 Modulo
+          📋 Modulo Vaccinale
         </button>
         <button id="tab-btn-lotti" onclick="switchAppTab('lotti')" class="px-3 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm text-sky-200 hover:text-white transition-all whitespace-nowrap !min-h-0">
-          📦 Lotti
+          📦 Gestione Lotti
         </button>
         <button id="tab-btn-report" onclick="switchAppTab('report')" class="px-3 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm text-sky-200 hover:text-white transition-all whitespace-nowrap !min-h-0">
-          📊 Report
+          📊 Report Consensi
         </button>
       </div>
 
@@ -198,7 +198,7 @@
         <button onclick="switchAppTab('modulo')" class="flex flex-col items-center justify-center p-6 sm:p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
           <span class="text-4xl sm:text-5xl mb-3">📋</span>
           <span class="text-lg sm:text-xl font-black text-sky-950">Modulo Vaccinale</span>
-          <span class="text-xs text-sky-600 font-bold mt-1">Compilazione consenso & Firma digitale</span>
+          <span class="text-xs text-sky-600 font-bold mt-1">Compilazione consenso</span>
         </button>
 
         <button id="hub-btn-lotti" onclick="switchAppTab('lotti')" class="flex flex-col items-center justify-center p-6 sm:p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
@@ -210,7 +210,7 @@
         <button onclick="switchAppTab('report')" class="flex flex-col items-center justify-center p-6 sm:p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
           <span class="text-4xl sm:text-5xl mb-3">📊</span>
           <span class="text-lg sm:text-xl font-black text-sky-950">Report Consensi</span>
-          <span class="text-xs text-sky-600 font-bold mt-1">Storico somministrazioni & PDF Drive</span>
+          <span class="text-xs text-sky-600 font-bold mt-1">Storico somministrazioni</span>
         </button>
       </div>
     </div>
@@ -292,7 +292,7 @@
             <div>
               <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Luogo di Somministrazione</label>
               <select id="vaccine-location" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none bg-white font-medium">
-                <option value="STUDIO/AMBULATORIO">STUDIO/AMBULATORIO</option>
+                <option value="AMBULATORIO">AMBULATORIO</option>
                 <option value="DOMICILIARE">DOMICILIARE</option>
               </select>
             </div>
@@ -301,18 +301,21 @@
 
         <!-- SCREEN 3: GDPR E FIRMA PAZIENTE -->
         <div id="wizard-screen-3" class="wizard-screen hidden bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
-          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Accettazione GDPR e Consenso Firma Digitale</h2>
+          <h2 class="text-lg sm:text-xl font-bold text-sky-900 mb-3 border-b pb-2">Passo 3: Accettazione G.D.P.R. e Consenso Firma Digitale</h2>
           
           <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
-            <p class="font-bold text-slate-900">Informativa Trattamento Dati e Biometria (Regolamento UE 2016/679):</p>
+            <p class="font-bold text-slate-900">Informativa Trattamento Dati e Firma Digitale (Reg. UE 2016/679 - GDPR)</p>
             <ul class="list-disc pl-5 space-y-1">
-              <li>I dati sanitari saranno trattati esclusivamente per la prestazione sanitaria.</li>
-              <li>Verranno raccolti dati biometrici di firma al solo scopo di garantire l'autenticità e la validità legale della firma elettronica.</li>
+              <li><strong>Titolare del Trattamento:</strong> Dott.ssa Arianna Baroni.</li>
+              <li><strong>Base Giuridica e Finalità:</strong> I dati relativi alla salute sono trattati esclusivamente per finalità di diagnosi, prevenzione e assistenza sanitaria (Art. 9, par. 2, lett. h GDPR) e adempimento di obblighi di legge.</li>
+              <li><strong>Finalità e Conservazione:</strong> I dati sono conservati nei sistemi informatici dello studio per 10 anni (termini prescrittivi ex art. 2224 c.c.) e non saranno comunicati a terzi né diffusi, salvo obblighi di legge.</li>
+              <li><strong>Valore della Firma Elettronica:</strong> La sottoscrizione su tablet costituisce Firma Elettronica Semplice (FES) ex Reg. UE 910/2014 (eIDAS), atta ad attestare la presa visione dell'informativa e la sottoscrizione del consenso.</li>
+              <li><strong>Modalità Alternativa:</strong> Selezionando NEGO, la procedura proseguirà con supporto cartaceo. Sono garantiti i diritti di accesso, rettifica e reclamo al Garante Privacy (Artt. 15-22 GDPR).</li>
             </ul>
           </div>
 
           <div class="mb-5">
-            <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso GDPR e Firma Digitale:</label>
+            <label class="block text-xs font-bold mb-2 text-slate-700 uppercase">Consenso G.D.P.R. e Firma Digitale:</label>
             <div class="grid grid-cols-2 gap-3 sm:gap-4">
               <button type="button" onclick="setConsentChoice('consensoPrivacy', true)" id="btn-privacy-yes" class="btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all">
                 ✓ ACCONSENTO
@@ -325,7 +328,7 @@
 
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Paziente (GDPR / Privacy)</label>
+              <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Paziente (G.D.P.R. / Privacy)</label>
               <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
             </div>
             <div class="border-2 border-dashed border-sky-300 rounded-2xl bg-white overflow-hidden">
@@ -341,9 +344,10 @@
           <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 mb-4">
             <p class="font-bold text-slate-900">Dichiarazione del Paziente:</p>
             <ul class="list-disc pl-5 space-y-1">
-              <li>Aver ricevuto e letto la scheda informativa sintetica antinfluenzale;</li>
-              <li>Essere stato/a informato/a su benefici e rischi della vaccinazione;</li>
-              <li>Aver compreso le informazioni e di esprimere la propria volontà.</li>
+              <li>Aver ricevuto, letto e compreso la scheda informativa sintetica relativa al vaccino in somministrazione..</li>
+              <li>Essere stato/a edotto/a dal medico su indicazioni, benefici, controindicazioni e potenziali reazioni avverse.</li>
+              <li>Aver avuto la piena possibilità di porre domande e aver ricevuto risposte chiare ed esaurienti.</li>
+              <li>Esprimere la propria libera, consapevole e revocabile volontà di sottoporsi alla somministrazione sanitaria.</li>
             </ul>
           </div>
 
@@ -445,7 +449,7 @@
       <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200">
         <div class="flex justify-between items-center mb-4 border-b pb-3">
           <h2 class="text-lg sm:text-xl font-bold text-sky-950 flex items-center gap-2">
-            <span>📦</span> Registro Lotti Registrati
+            <span>📦</span> Magazzino Lotti Vaccino
           </h2>
           <button onclick="loadManagementVaccines()" class="text-xs font-bold text-sky-600 hover:underline !min-h-0">🔄 Aggiorna</button>
         </div>
@@ -480,7 +484,7 @@
             <h2 class="text-xl sm:text-2xl font-black text-sky-950 flex items-center gap-2">
               <span>📊</span> Report Consensi Vaccinali
             </h2>
-            <p class="text-xs text-slate-500 font-medium mt-1">Storico consensi salvati nel database e consultazione PDF</p>
+            <p class="text-xs text-slate-500 font-medium mt-1">Storico vaccinazioni</p>
           </div>
           
           <div class="flex items-center gap-2">
@@ -495,12 +499,12 @@
 
         <div class="bg-sky-50/70 border border-sky-100 p-4 rounded-2xl mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Da Data</label>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Da...</label>
             <input type="date" id="report-filter-date-from" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
           </div>
 
           <div>
-            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">A Data</label>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">A...</label>
             <input type="date" id="report-filter-date-to" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
           </div>
 
@@ -517,7 +521,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Esito Vaccino</label>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Consenso Vaccinale</label>
             <select id="report-filter-esito" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
               <option value="">-- Tutti --</option>
               <option value="Sì">Somministrato</option>
@@ -526,7 +530,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Stato GDPR</label>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Consenso G.D.P.R. e Firma Digitale</label>
             <select id="report-filter-gdpr" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
               <option value="">-- Tutti --</option>
               <option value="Sì">Acconsente</option>
@@ -543,11 +547,11 @@
                 <th class="p-3 font-extrabold">Paziente</th>
                 <th class="p-3 font-extrabold">Codice Fiscale</th>
                 <th class="p-3 font-extrabold">Data Nascita</th>
-                <th class="p-3 font-extrabold">Vaccino</th>
+                <th class="p-3 font-extrabold">Tipologia Vaccino</th>
                 <th class="p-3 font-extrabold text-center">N° Lotto</th>
                 <th class="p-3 font-extrabold text-center">Consenso Vaccino</th>
-                <th class="p-3 font-extrabold text-center">GDPR</th>
-                <th class="p-3 font-extrabold text-center">Documento PDF</th>
+                <th class="p-3 font-extrabold text-center">G.D.P.R.</th>
+                <th class="p-3 font-extrabold text-center">PDF</th>
               </tr>
             </thead>
             <tbody id="report-consensi-tbody" class="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -1415,14 +1419,20 @@ function resizeAllCanvases() {
           ? availableVaccines[vSelect] 
           : { denominazione: 'Non specificato', lotto: 'N/D' };
 
-        const formData = {
+const formData = {
           cognome: selectedPatient.cognome || '',
           nome: selectedPatient.nome || '',
           codicefiscale: selectedPatient.codicefiscale || '',
           datanascita: selectedPatient.datanascita || '',
+          sesso: selectedPatient.sesso || '',
+          indirizzo: selectedPatient.indirizzo || '',
+          comune: selectedPatient.comune || '',
+          telefono: selectedPatient.telefono || '',
+          iscrittossr: selectedPatient.iscrittossr || 'S.S.R. LAZIO',
+          residente: selectedPatient.residente || 'NELLA REGIONE LAZIO',
           vaccinoDenominazione: vData.denominazione || '',
           vaccinoLotto: vData.lotto || '',
-          luogoVaccinazione: document.getElementById('vaccine-location').value || 'STUDIO/AMBULATORIO',
+          luogoVaccinazione: document.getElementById('vaccine-location').value || 'AMBULATORIO',
           consensoPrivacy: consentState.consensoPrivacy ? 'Acconsente' : 'Non acconsente',
           consensoVaccino: consentState.consensoVaccino ? 'Acconsente' : 'Non acconsente',
           firmaPazienteBiometrico: canvasStates['canvas-patient-biometrico'] ? document.getElementById('canvas-patient-biometrico').toDataURL('image/png') : '',
