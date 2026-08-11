@@ -916,9 +916,9 @@
       const selectedEsito = document.getElementById('report-filter-esito')?.value || '';
       const selectedGdpr = document.getElementById('report-filter-gdpr')?.value || '';
 
-      const filtered = reportDataCache.filter(item => {
-        if (dateFrom && item.isoDate && item.isoDate < dateFrom) return false;
-        if (dateTo && item.isoDate && item.isoDate > dateTo) return false;
+const filtered = reportDataCache.filter(item => {
+        if (dateFrom && (!item.isoDate || item.isoDate < dateFrom)) return false;
+        if (dateTo && (!item.isoDate || item.isoDate > dateTo)) return false;
         if (selectedVaccine && item.denominazioneVaccino.toLowerCase().trim() !== selectedVaccine) return false;
         if (selectedEsito && item.consenso !== selectedEsito) return false;
         if (selectedGdpr && item.gdpr !== selectedGdpr) return false;
@@ -1314,11 +1314,11 @@
       }
     }
 
-    function resizeAllCanvases() {
+function resizeAllCanvases() {
       ['canvas-patient-vaccino', 'canvas-patient-biometrico', 'canvas-doctor'].forEach(id => {
         const canvas = document.getElementById(id);
         if (canvas && canvas.offsetWidth > 0) {
-          if (canvas.width !== canvas.offsetWidth) {
+          if (canvas.width === 0 || (canvas.width !== canvas.offsetWidth && !canvasStates[id])) {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight || 150;
             const ctx = canvas.getContext('2d');

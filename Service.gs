@@ -37,16 +37,16 @@ function getConsensiReportData() {
 
   const headers = data.shift().map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
   
-  const tsIdx = headers.indexOf('timestamp');
+const tsIdx = headers.findIndex(h => h.includes('timestamp') || h.includes('data'));
   const cognomeIdx = headers.indexOf('cognome');
   const nomeIdx = headers.indexOf('nome');
-  const cfIdx = headers.indexOf('codicefiscale');
-  const dobIdx = headers.indexOf('datanascita');
-  const vacIdx = headers.indexOf('denominazionevaccino');
-  const lottoIdx = headers.indexOf('numerolotto');
-  const consensoIdx = headers.indexOf('consensosomministrazione');
-  const gdprIdx = headers.indexOf('consensoprivacy');
-  const pdfIdx = headers.indexOf('pdfurl');
+  const cfIdx = headers.findIndex(h => h.includes('codicefiscale') || h === 'cf');
+  const dobIdx = headers.findIndex(h => h.includes('datanascita') || h.includes('nascita'));
+  const vacIdx = headers.findIndex(h => h.includes('denominazionevaccino') || h.includes('vaccino'));
+  const lottoIdx = headers.findIndex(h => h.includes('numerolotto') || h.includes('lotto'));
+  const consensoIdx = headers.findIndex(h => h.includes('consensosomministrazione') || h.includes('consensovaccino'));
+  const gdprIdx = headers.findIndex(h => h.includes('consensoprivacy') || h.includes('gdpr'));
+  const pdfIdx = headers.findIndex(h => h.includes('pdfurl') || h.includes('pdf'));
 
   return data.map(row => {
     const rawTs = row[tsIdx];
@@ -63,11 +63,11 @@ function getConsensiReportData() {
       }
     }
 
-    const haConsenso = String(row[consensoIdx] || '').toLowerCase().includes('sì') || 
-                       String(row[consensoIdx] || '').toLowerCase().includes('acconsente');
+const valConsenso = String(row[consensoIdx] || '').toLowerCase().trim();
+    const haConsenso = valConsenso.includes('sì') || valConsenso.includes('si') || valConsenso.includes('acconsente');
                        
-    const haGdpr = String(row[gdprIdx] || '').toLowerCase().includes('sì') || 
-                   String(row[gdprIdx] || '').toLowerCase().includes('acconsente');
+    const valGdpr = String(row[gdprIdx] || '').toLowerCase().trim();
+    const haGdpr = valGdpr.includes('sì') || valGdpr.includes('si') || valGdpr.includes('acconsente');
 
     return {
       giorno: giorno,

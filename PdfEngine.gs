@@ -24,7 +24,7 @@ function submitConsentForm(formData) {
     const headers = consensiSheet.getRange(1, 1, 1, consensiSheet.getLastColumn()).getValues()[0];
     
     const newRow = headers.map(header => {
-      const key = header.toLowerCase().trim();
+      const key = header.toLowerCase().trim().replace(/\s+/g, '');
       switch(key) {
         case 'timestamp': return new Date();
         case 'cognome': return formData.cognome || '';
@@ -84,6 +84,18 @@ function createPdfHtml(data) {
     ? 'ACCONSENTE al trattamento dei dati personali e biometrici'
     : 'NON ACCONSENTE al trattamento dei dati personali e biometrici';
 
+  const imgPrivacy = data.firmaPazienteBiometrico 
+    ? `<img src="${data.firmaPazienteBiometrico}" style="height: 42px; max-width: 100%; object-fit: contain;" />` 
+    : `<div style="height: 42px; line-height: 42px; font-size: 8pt; color: #94a3b8; font-style: italic;">[Firma Non Presente]</div>`;
+
+  const imgVaccino = data.firmaPazienteVaccino 
+    ? `<img src="${data.firmaPazienteVaccino}" style="height: 42px; max-width: 100%; object-fit: contain;" />` 
+    : `<div style="height: 42px; line-height: 42px; font-size: 8pt; color: #94a3b8; font-style: italic;">[Firma Non Presente]</div>`;
+
+  const imgMedico = data.firmaMedico 
+    ? `<img src="${data.firmaMedico}" style="height: 42px; max-width: 100%; object-fit: contain;" />` 
+    : `<div style="height: 42px; line-height: 42px; font-size: 8pt; color: #94a3b8; font-style: italic;">[Firma Non Presente]</div>`;
+
   return `
     <!DOCTYPE html>
     <html>
@@ -92,38 +104,37 @@ function createPdfHtml(data) {
         @page { size: A4; margin: 10mm 12mm; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.3; margin: 0; }
         .header-title { text-align: center; color: #1d4ed8; font-size: 15pt; font-weight: bold; border-bottom: 2px solid #1d4ed8; padding-bottom: 6px; margin-bottom: 12px; }
-        .section-block { page-break-inside: avoid; margin-bottom: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; }
+        .section-block { margin-bottom: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; }
         .section-title { font-size: 10.5pt; font-weight: bold; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; }
-        .grid-2 { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .col { width: 48%; }
-        .col-full { width: 100%; margin-bottom: 4px; }
         .label { font-weight: bold; color: #475569; }
         .value { font-weight: 600; color: #0f172a; }
         ul { margin: 3px 0 6px 16px; padding: 0; }
         li { margin-bottom: 2px; text-align: justify; }
         .statement-box { text-align: center; font-size: 9.5pt; font-weight: bold; color: #0f172a; background: #f1f5f9; padding: 5px; border-radius: 4px; margin-top: 4px; }
-        .sig-container { margin-top: 8px; display: flex; justify-content: flex-end; }
-        .signature-box { width: 220px; text-align: center; border: 1px solid #cbd5e1; padding: 4px; border-radius: 6px; background: #fafafa; }
-        .signature-box p { font-size: 8pt; font-weight: bold; margin: 0 0 2px 0; color: #334155; }
-        .signature-box img { max-width: 100%; height: 42px; object-fit: contain; border-bottom: 1px solid #94a3b8; }
+        .signature-box { width: 210px; text-align: center; border: 1px solid #cbd5e1; padding: 4px; border-radius: 6px; background: #fafafa; }
+        .signature-box p { font-size: 8pt; font-weight: bold; margin: 0 0 2px 0; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; }
         .doctor-title { font-size: 7.5pt; font-style: italic; color: #64748b; margin-top: 2px; }
       </style>
     </head>
     <body>
       <div class="header-title">Modulo di Consenso alla Vaccinazione</div>
 
+      <!-- SEZIONE 1: ANAGRAFICA -->
       <div class="section-block">
         <div class="section-title">1. Dati Anagrafici Paziente</div>
-        <div class="grid-2">
-          <div class="col"><span class="label">Cognome:</span> <span class="value">${data.cognome || ''}</span></div>
-          <div class="col"><span class="label">Nome:</span> <span class="value">${data.nome || ''}</span></div>
-        </div>
-        <div class="grid-2">
-          <div class="col"><span class="label">Codice Fiscale:</span> <span class="value">${data.codicefiscale || ''}</span></div>
-          <div class="col"><span class="label">Data di Nascita:</span> <span class="value">${data.datanascita || ''}</span></div>
-        </div>
+        <table width="100%" border="0" cellspacing="0" cellpadding="2">
+          <tr>
+            <td width="50%"><span class="label">Cognome:</span> <span class="value">${data.cognome || ''}</span></td>
+            <td width="50%"><span class="label">Nome:</span> <span class="value">${data.nome || ''}</span></td>
+          </tr>
+          <tr>
+            <td width="50%"><span class="label">Codice Fiscale:</span> <span class="value">${data.codicefiscale || ''}</span></td>
+            <td width="50%"><span class="label">Data di Nascita:</span> <span class="value">${data.datanascita || ''}</span></td>
+          </tr>
+        </table>
       </div>
 
+      <!-- SEZIONE 2: GDPR PRIVACY -->
       <div class="section-block">
         <div class="section-title">2. Consenso al Trattamento Dati Personali e Biometrici (GDPR)</div>
         <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a, ai sensi del Regolamento UE 2016/679, dichiara che:</p>
@@ -133,21 +144,30 @@ function createPdfHtml(data) {
         </ul>
         <div class="statement-box">${consensoPrivacyText}</div>
         
-        <div class="sig-container">
-          <div class="signature-box">
-            <p>Firma Paziente (GDPR / Privacy)</p>
-            <img src="${data.firmaPazienteBiometrico || ''}" />
-          </div>
-        </div>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 8px;">
+          <tr>
+            <td align="right">
+              <div class="signature-box">
+                <p>Firma Paziente (GDPR / Privacy)</p>
+                ${imgPrivacy}
+              </div>
+            </td>
+          </tr>
+        </table>
       </div>
 
+      <!-- SEZIONE 3: SOMMINISTRAZIONE E FIRME -->
       <div class="section-block">
         <div class="section-title">3. Dati e Consenso alla Vaccinazione</div>
-        <div class="grid-2">
-          <div class="col"><span class="label">Nome vaccino:</span> <span class="value">${data.vaccinoDenominazione || ''}</span></div>
-          <div class="col"><span class="label">Lotto N:</span> <span class="value">${data.vaccinoLotto || ''}</span></div>
-        </div>
-        <div class="col-full" style="margin-bottom: 8px;"><span class="label">Luogo vaccinazione:</span> <span class="value">${data.luogoVaccinazione || ''}</span></div>
+        <table width="100%" border="0" cellspacing="0" cellpadding="2" style="margin-bottom: 4px;">
+          <tr>
+            <td width="50%"><span class="label">Nome vaccino:</span> <span class="value">${data.vaccinoDenominazione || ''}</span></td>
+            <td width="50%"><span class="label">Lotto N:</span> <span class="value">${data.vaccinoLotto || ''}</span></td>
+          </tr>
+          <tr>
+            <td colspan="2"><span class="label">Luogo vaccinazione:</span> <span class="value">${data.luogoVaccinazione || ''}</span></td>
+          </tr>
+        </table>
         
         <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a dichiara di:</p>
         <ul>
@@ -158,17 +178,23 @@ function createPdfHtml(data) {
         </ul>
         <div class="statement-box">${consensoVaccinoText}</div>
         
-        <div class="sig-container" style="justify-content: space-between;">
-          <div class="signature-box">
-            <p>Firma Operatore Sanitario</p>
-            <img src="${data.firmaMedico || ''}" />
-            <div class="doctor-title">Dott.ssa Arianna Baroni<br>Medico Chirurgo</div>
-          </div>
-          <div class="signature-box">
-            <p>Firma Paziente (Consenso Vaccino)</p>
-            <img src="${data.firmaPazienteVaccino || ''}" />
-          </div>
-        </div>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 8px;">
+          <tr>
+            <td width="50%" align="left" valign="top">
+              <div class="signature-box">
+                <p>Firma Operatore Sanitario</p>
+                ${imgMedico}
+                <div class="doctor-title">Dott.ssa Arianna Baroni<br>Medico Chirurgo</div>
+              </div>
+            </td>
+            <td width="50%" align="right" valign="top">
+              <div class="signature-box">
+                <p>Firma Paziente (Consenso Vaccino)</p>
+                ${imgVaccino}
+              </div>
+            </td>
+          </tr>
+        </table>
       </div>
 
       <div style="font-size: 8pt; color: #64748b; text-align: right; margin-top: 4px;">
