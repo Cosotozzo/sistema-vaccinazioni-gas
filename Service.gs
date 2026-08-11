@@ -77,8 +77,8 @@ const valConsenso = String(row[consensoIdx] || '').toLowerCase().trim();
       nome: row[nomeIdx] || '',
       codiceFiscale: row[cfIdx] || '',
       dataNascita: formatDateOnly(row[dobIdx]),
-      denominazioneVaccino: row[vacIdx] || '',
-      numeroLotto: haConsenso ? (row[lottoIdx] || 'N/D') : 'Consenso Negato',
+      denominazioneVaccino: haConsenso ? (row[vacIdx] || '') : '',
+      numeroLotto: haConsenso ? (row[lottoIdx] || 'N/D') : '',
       consenso: haConsenso ? 'Sì' : 'No',
       gdpr: haGdpr ? 'Sì' : 'No',
       pdfUrl: row[pdfIdx] || ''
