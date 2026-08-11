@@ -1,5 +1,5 @@
 /**
- * Services.gs - Servizi di Business Logic e Gestione Dati
+ * Service.gs - Servizi di Business Logic e Gestione Dati
  */
 
 function doGet(e) {
@@ -9,7 +9,7 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
 }
 
-// Restituisce SOLO i vaccini attivi con almeno 1 dose per la compilazione del modulo
+// Restituisce SOLO i vaccini disponibili con almeno 1 dose per la compilazione del modulo
 function getVaccineData() {
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
   if (!sheet) return [];
@@ -26,16 +26,16 @@ function getVaccineData() {
     .filter(row => {
       const stato = (row[statoIdx] || '').toString().toLowerCase().trim();
       const dosi = parseInt(row[dosiIdx], 10);
-      return stato !== 'completato' && (isNaN(dosi) || dosi > 0);
+      return stato !== 'completato' && stato !== 'esaurito' && (!isNaN(dosi) && dosi > 0);
     })
     .map(row => ({
       denominazione: row[denominazioneIdx] || '',
       lotto: row[lottoIdx] || '',
-      dosi: row[dosiIdx] !== undefined ? row[dosiIdx] : '-'
+      dosi: row[dosiIdx] !== undefined ? row[dosiIdx] : 0
     }));
 }
 
-// Restituisce TUTTI i vaccini per la schermata di gestione del Medico
+// Restituisce TUTTI i vaccini per la tabella di gestione
 function getAllVaccinesForManagement() {
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
   if (!sheet) return [];
@@ -49,48 +49,30 @@ function getAllVaccinesForManagement() {
   const dosiIdx = headers.indexOf('dosidisponibili');
 
   return data.map((row, index) => ({
-    rowIndex: index + 2, // riga effettiva nel foglio
+    rowIndex: index + 2,
     denominazione: row[denominazioneIdx] || '',
     lotto: row[lottoIdx] || '',
     stato: row[statoIdx] || 'Attivo',
-    dosi: row[dosiIdx] !== undefined ? row[dosiIdx] : 0
+    dosi: row[dosiIdx] !== undefined ? parseInt(row[dosiIdx], 10) || 0 : 0
   }));
 }
 
-// Inserimento nuovo lotto vaccino con quantitativo dosi
+// Inserimento nuovo lotto vaccino
 function addVaccineBatch(denominazione, lotto, dosi) {
   if (!denominazione || !lotto) {
     return { success: false, message: 'Denominazione e Numero Lotto sono obbligatori.' };
   }
 
   const numDosi = parseInt(dosi, 10) || 0;
+  const initialStatus = numDosi > 0 ? 'Attivo' : 'Completato';
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  sheet.appendRow([denominazione, lotto, 'Attivo', new Date(), numDosi]);
-  logAction('Medico', `Inserito nuovo lotto vaccino: ${denominazione} - Lotto ${lotto} (${numDosi} dosi)`);
+  sheet.appendRow([denominazione, lotto, initialStatus, new Date(), numDosi]);
+  
+  logAction('Medico', `Inserito nuovo lotto: ${denominazione} - Lotto ${lotto} (${numDosi} dosi)`);
   return { success: true, message: 'Lotto vaccino inserito con successo!' };
 }
 
-// Cambia lo stato di un lotto (Attivo <-> Completato)
-function toggleVaccineStatus(rowIndex, newStatus) {
-  const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  if (rowIndex < 2 || rowIndex > sheet.getLastRow()) {
-    return { success: false, message: 'Indice riga non valido.' };
-  }
-
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
-    .map(h => String(h || '').toLowerCase().trim());
-  const statoIdx = headers.indexOf('stato');
-
-  if (statoIdx === -1) {
-    return { success: false, message: 'Colonna Stato non trovata.' };
-  }
-
-  sheet.getRange(rowIndex, statoIdx + 1).setValue(newStatus);
-  logAction('Medico', `Stato lotto alla riga ${rowIndex} modificato in: ${newStatus}`);
-  return { success: true, message: `Lotto impostato come "${newStatus}" con successo!` };
-}
-
-// Sovrascrittura manuale del numero di dosi
+// Aggiornamento puntuale delle dosi con ripristino o chiusura automatica dello stato
 function updateVaccineQuantity(rowIndex, newQuantity) {
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
   if (rowIndex < 2 || rowIndex > sheet.getLastRow()) {
@@ -104,18 +86,28 @@ function updateVaccineQuantity(rowIndex, newQuantity) {
 
   if (dosiIdx === -1) return { success: false, message: 'Colonna DosiDisponibili non trovata.' };
 
-  const qty = parseInt(newQuantity, 10) || 0;
-  sheet.getRange(rowIndex, dosiIdx + 1).setValue(qty);
-
-  if (qty > 0 && statoIdx !== -1) {
-    sheet.getRange(rowIndex, statoIdx + 1).setValue('Attivo');
+  const qty = parseInt(newQuantity, 10);
+  if (isNaN(qty) || qty < 0) {
+    return { success: false, message: 'Inserisci un numero di dosi valido.' };
   }
 
-  logAction('Medico', `Modificata quantita dosi per riga ${rowIndex} a: ${qty}`);
-  return { success: true, message: 'Quantità dosi aggiornata con successo!' };
+  sheet.getRange(rowIndex, dosiIdx + 1).setValue(qty);
+
+  const newStatus = qty > 0 ? 'Attivo' : 'Completato';
+  if (statoIdx !== -1) {
+    sheet.getRange(rowIndex, statoIdx + 1).setValue(newStatus);
+  }
+
+  logAction('Medico', `Aggiornate dosi riga ${rowIndex} a: ${qty} (Stato: ${newStatus})`);
+  return { 
+    success: true, 
+    newStatus: newStatus, 
+    newDoses: qty, 
+    message: `Dosi aggiornate a ${qty}. Stato: ${qty > 0 ? 'Disponibile' : 'Esaurito'}.` 
+  };
 }
 
-// Scalata automatica di 1 dose al termine di una vaccinazione
+// Decremento automatico di 1 dose post-somministrazione
 function decrementVaccineDose(denominazione, lotto) {
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
   if (!sheet) return;

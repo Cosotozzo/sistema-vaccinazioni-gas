@@ -40,7 +40,7 @@ function submitConsentForm(formData) {
 
     consensiSheet.appendRow(newRow);
     
-    // Decrementa automaticamente 1 dose dal lotto vaccinale
+    // Decrementa 1 dose dal lotto vaccinale
     decrementVaccineDose(formData.vaccinoDenominazione, formData.vaccinoLotto);
 
     logAction('Sistema', `Consenso salvato per ${formData.cognome} ${formData.nome}`);
@@ -123,7 +123,6 @@ function createPdfHtml(data) {
         </div>
         <div class="col-full"><span class="label">Luogo vaccinazione:</span> <span class="value">${data.luogoVaccinazione || ''}</span></div>
         
-        <!-- FIRMA MEDICO/OPERATORE NELLA SEZIONE 3 -->
         <div class="sig-container">
           <div class="signature-box">
             <p>Firma Operatore Sanitario</p>
@@ -144,7 +143,6 @@ function createPdfHtml(data) {
         </ul>
         <div class="statement-box">${consensoVaccinoText}</div>
         
-        <!-- FIRMA 1 PAZIENTE NELLA SEZIONE 4 -->
         <div class="sig-container">
           <div class="signature-box">
             <p>Firma 1 Paziente (Consenso Vaccino)</p>
@@ -162,7 +160,6 @@ function createPdfHtml(data) {
         </ul>
         <div class="statement-box">${consensoPrivacyText}</div>
         
-        <!-- FIRMA 2 PAZIENTE NELLA SEZIONE 5 -->
         <div class="sig-container">
           <div class="signature-box">
             <p>Firma 2 Paziente (Dati Biometrici)</p>

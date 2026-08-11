@@ -12,10 +12,10 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   
   <style>
-    /* Centratura universale per tutti i pulsanti dell'app */
+    /* Touch Target per Tablet (min. 48px) e centratura universale testo */
     button, .btn-touch { 
-      min-height: 52px; 
-      font-size: 1.1rem; 
+      min-height: 48px; 
+      font-size: 1.05rem; 
       display: inline-flex !important; 
       align-items: center !important; 
       justify-content: center !important; 
@@ -34,7 +34,9 @@
 </head>
 <body class="bg-medical text-slate-800 font-sans antialiased selection:bg-sky-200">
 
+  <!-- ======================================================== -->
   <!-- MODULO AUTENTICAZIONE -->
+  <!-- ======================================================== -->
   <div id="auth-module" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-xl border border-sky-100">
       
@@ -399,7 +401,7 @@
           </div>
           <div class="sm:col-span-1">
             <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Dosi Iniziali</label>
-            <input type="number" id="new-vaccine-dosi" placeholder="es. 50" min="1" value="50" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none">
+            <input type="number" id="new-vaccine-dosi" placeholder="es. 50" min="1" value="50" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-bold">
           </div>
           <div class="sm:col-span-1 flex items-end">
             <button onclick="handleCreateVaccineBatch()" id="btn-add-vaccine" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20">
@@ -424,7 +426,7 @@
                 <th class="p-4 font-extrabold">Denominazione</th>
                 <th class="p-4 font-extrabold">N° Lotto</th>
                 <th class="p-4 font-extrabold text-center">Dosi Rimanenti</th>
-                <th class="p-4 font-extrabold">Stato</th>
+                <th class="p-4 font-extrabold text-center">Stato</th>
                 <th class="p-4 font-extrabold text-right">Azione</th>
               </tr>
             </thead>
@@ -453,6 +455,46 @@
     };
 
     const canvasStates = { 'canvas-patient-vaccino': false, 'canvas-patient-biometrico': false, 'canvas-doctor': false };
+
+    // Gestione Persistenza Sessione Browser (SessionStorage)
+    function saveSession(name, role, tab = 'hub') {
+      const sessionData = { name: name, role: role, currentTab: tab };
+      sessionStorage.setItem('app_user_session', JSON.stringify(sessionData));
+    }
+
+    function getSession() {
+      const data = sessionStorage.getItem('app_user_session');
+      return data ? JSON.parse(data) : null;
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem('app_user_session');
+    }
+
+    function checkExistingSession() {
+      const session = getSession();
+      if (session && session.name && session.role) {
+        currentUserRole = session.role;
+        
+        document.getElementById('auth-module').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('user-display-name').innerText = session.name;
+        document.getElementById('user-display-role').innerText = `Ruolo: ${session.role}`;
+
+        if (currentUserRole === 'medico') {
+          document.getElementById('hub-btn-lotti')?.classList.remove('hidden');
+          document.getElementById('tab-btn-lotti')?.classList.remove('hidden');
+        } else {
+          document.getElementById('hub-btn-lotti')?.classList.add('hidden');
+          document.getElementById('tab-btn-lotti')?.classList.add('hidden');
+        }
+
+        initDashboard();
+        switchAppTab(session.currentTab || 'hub');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', checkExistingSession);
 
     function runServerFunction(functionName, ...args) {
       return new Promise((resolve, reject) => {
@@ -545,17 +587,19 @@
           currentUserRole = response.role;
           showToast(`Benvenuto/a, ${response.name}`);
           
+          saveSession(response.name, response.role, 'hub');
+
           document.getElementById('auth-module').classList.add('hidden');
           document.getElementById('main-app').classList.remove('hidden');
           document.getElementById('user-display-name').innerText = response.name;
           document.getElementById('user-display-role').innerText = `Ruolo: ${response.role}`;
 
           if (currentUserRole === 'medico') {
-            document.getElementById('hub-btn-lotti').classList.remove('hidden');
-            document.getElementById('tab-btn-lotti').classList.remove('hidden');
+            document.getElementById('hub-btn-lotti')?.classList.remove('hidden');
+            document.getElementById('tab-btn-lotti')?.classList.remove('hidden');
           } else {
-            document.getElementById('hub-btn-lotti').classList.add('hidden');
-            document.getElementById('tab-btn-lotti').classList.add('hidden');
+            document.getElementById('hub-btn-lotti')?.classList.add('hidden');
+            document.getElementById('tab-btn-lotti')?.classList.add('hidden');
           }
 
           switchAppTab('hub');
@@ -628,8 +672,10 @@
     }
 
     function logout() {
+      clearSession();
       document.getElementById('main-app').classList.add('hidden');
       document.getElementById('auth-module').classList.remove('hidden');
+      document.getElementById('login-password').value = '';
       currentUserRole = '';
       showToast("Disconnessione effettuata");
     }
@@ -650,20 +696,25 @@
       const activeStyle = "px-4 py-2 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all !min-h-0";
       const inactiveStyle = "px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0";
 
-      btnHub.className = inactiveStyle;
-      btnModulo.className = inactiveStyle;
-      btnLotti.className = inactiveStyle;
+      if (btnHub) btnHub.className = inactiveStyle;
+      if (btnModulo) btnModulo.className = inactiveStyle;
+      if (btnLotti) btnLotti.className = inactiveStyle;
+
+      const session = getSession();
+      if (session) {
+        saveSession(session.name, session.role, tab);
+      }
 
       if (tab === 'hub') {
         viewHub.classList.remove('hidden');
-        btnHub.className = activeStyle;
+        if (btnHub) btnHub.className = activeStyle;
       } else if (tab === 'modulo') {
         viewModulo.classList.remove('hidden');
-        btnModulo.className = activeStyle;
+        if (btnModulo) btnModulo.className = activeStyle;
         loadVaccines();
       } else if (tab === 'lotti') {
         viewLotti.classList.remove('hidden');
-        btnLotti.className = activeStyle;
+        if (btnLotti) btnLotti.className = activeStyle;
         loadManagementVaccines();
       }
     }
@@ -857,7 +908,7 @@
       document.getElementById('vaccine-lotto').value = (idx !== "" && availableVaccines[idx]) ? availableVaccines[idx].lotto : "";
     }
 
-    // GESTIONE LOTTI VACCINI (AGGIORNAMENTO PUNTUALE SENZA RELOAD TABELLA)
+    // GESTIONE LOTTI VACCINI (AGGIORNAMENTO PUNTUALE TRAMITE PULSANTE "AGGIORNA DOSI")
     async function loadManagementVaccines() {
       const tbody = document.getElementById('management-vaccines-tbody');
       tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Aggiornamento registro in corso...</td></tr>`;
@@ -871,9 +922,10 @@
 
         tbody.innerHTML = "";
         list.forEach(v => {
-          const isCompleted = (v.stato || '').toLowerCase() === 'completato';
+          const isCompleted = (v.stato || '').toLowerCase() === 'completato' || (v.stato || '').toLowerCase() === 'esaurito' || v.dosi <= 0;
+          const statusLabel = isCompleted ? 'Esaurito' : 'Disponibile';
           const badgeClass = isCompleted 
-            ? "bg-slate-100 text-slate-600 border border-slate-300" 
+            ? "bg-slate-100 text-slate-500 border border-slate-300" 
             : "bg-emerald-100 text-emerald-800 border border-emerald-300";
 
           const tr = document.createElement('tr');
@@ -882,20 +934,18 @@
           tr.innerHTML = `
             <td class="p-4 font-bold text-slate-800">${v.denominazione}</td>
             <td class="p-4 font-mono font-bold text-slate-700">${v.lotto}</td>
-            <td class="p-4 text-center font-bold">
-              <input type="number" min="0" value="${v.dosi}" onchange="handleOverrideQuantity(${v.rowIndex}, this.value)" class="w-20 text-center border-2 border-slate-200 rounded-xl px-2 py-1 focus:border-sky-500 outline-none font-bold">
+            <td class="p-4 text-center">
+              <input type="number" id="input-dosi-${v.rowIndex}" min="0" value="${v.dosi}" class="w-24 text-center border-2 border-slate-200 rounded-xl px-3 py-2 focus:border-sky-500 outline-none font-bold text-base">
             </td>
-            <td class="p-4"><span class="status-badge px-3 py-1 rounded-full text-xs font-black uppercase ${badgeClass}">${v.stato}</span></td>
-            <td class="p-4 text-right action-btn-container">
-              ${!isCompleted ? `
-                <button onclick="handleToggleStatus(${v.rowIndex}, 'Completato')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
-                  Esaurito
-                </button>
-              ` : `
-                <button onclick="handleToggleStatus(${v.rowIndex}, 'Attivo')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
-                  Ripristina come Disponibile
-                </button>
-              `}
+            <td class="p-4 text-center">
+              <span id="badge-status-${v.rowIndex}" class="px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${badgeClass}">
+                ${statusLabel}
+              </span>
+            </td>
+            <td class="p-4 text-right">
+              <button onclick="handleUpdateDoses(${v.rowIndex})" id="btn-save-dosi-${v.rowIndex}" class="btn-touch bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all !min-h-[44px]">
+                🔄 Aggiorna Dosi
+              </button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -941,67 +991,61 @@
       }
     }
 
-    async function handleToggleStatus(rowIndex, newStatus) {
+    async function handleUpdateDoses(rowIndex) {
+      const inputEl = document.getElementById(`input-dosi-${rowIndex}`);
+      const btnEl = document.getElementById(`btn-save-dosi-${rowIndex}`);
+      if (!inputEl) return;
+
+      const newQty = inputEl.value;
+      if (newQty === "" || parseInt(newQty, 10) < 0) {
+        return showToast("Inserisci un numero di dosi valido (>= 0)", "error");
+      }
+
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerText = "Salvataggio...";
+      }
+
       try {
-        const res = await runServerFunction('toggleVaccineStatus', rowIndex, newStatus);
+        const res = await runServerFunction('updateVaccineQuantity', rowIndex, newQty);
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerText = "🔄 Aggiorna Dosi";
+        }
+
         if (res.success) {
           showToast(res.message);
-          updateRowStatusUI(rowIndex, newStatus);
+          updateRowStatusUI(rowIndex, res.newStatus, res.newDoses);
         } else {
           showToast(res.message, "error");
         }
       } catch (err) {
-        showToast("Errore durante il cambio di stato del lotto", "error");
-      }
-    }
-
-    async function handleOverrideQuantity(rowIndex, newQuantity) {
-      try {
-        const res = await runServerFunction('updateVaccineQuantity', rowIndex, newQuantity);
-        if (res.success) {
-          showToast(res.message);
-          const qty = parseInt(newQuantity, 10) || 0;
-          updateRowStatusUI(rowIndex, qty === 0 ? 'Completato' : 'Attivo');
-        } else {
-          showToast(res.message, "error");
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerText = "🔄 Aggiorna Dosi";
         }
-      } catch (err) {
-        showToast("Errore nell'aggiornamento delle dosi", "error");
+        showToast("Errore durante l'aggiornamento delle dosi", "error");
       }
     }
 
-    // Funzione helper per modificare unicamente gli elementi DOM della riga interessata
-    function updateRowStatusUI(rowIndex, status) {
-      const row = document.getElementById(`vaccine-row-${rowIndex}`);
-      if (!row) return;
-
-      const badgeEl = row.querySelector('.status-badge');
-      const actionBtnContainer = row.querySelector('.action-btn-container');
-      const isCompleted = (status || '').toLowerCase() === 'completato';
+    function updateRowStatusUI(rowIndex, status, doses) {
+      const badgeEl = document.getElementById(`badge-status-${rowIndex}`);
+      const inputEl = document.getElementById(`input-dosi-${rowIndex}`);
+      
+      const isCompleted = (status || '').toLowerCase() === 'completato' || (status || '').toLowerCase() === 'esaurito' || doses <= 0;
+      const statusLabel = isCompleted ? 'Esaurito' : 'Disponibile';
 
       if (badgeEl) {
-        badgeEl.innerText = status;
-        badgeEl.className = `status-badge px-3 py-1 rounded-full text-xs font-black uppercase ${
+        badgeEl.innerText = statusLabel;
+        badgeEl.className = `px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
           isCompleted 
-            ? 'bg-slate-100 text-slate-600 border border-slate-300' 
+            ? 'bg-slate-100 text-slate-500 border border-slate-300' 
             : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
         }`;
       }
 
-      if (actionBtnContainer) {
-        if (!isCompleted) {
-          actionBtnContainer.innerHTML = `
-            <button onclick="handleToggleStatus(${rowIndex}, 'Completato')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
-              Esaurito
-            </button>
-          `;
-        } else {
-          actionBtnContainer.innerHTML = `
-            <button onclick="handleToggleStatus(${rowIndex}, 'Attivo')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md !min-h-0">
-              Ripristina come Disponibile
-            </button>
-          `;
-        }
+      if (inputEl && doses !== undefined) {
+        inputEl.value = doses;
       }
     }
 
