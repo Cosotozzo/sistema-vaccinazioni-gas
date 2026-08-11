@@ -12,10 +12,13 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   
   <style>
-    /* Touch Target per Tablet (min. 48px) e centratura universale testo */
-    button, .btn-touch { 
+    /* Touch Target per Tablet (min. 48px) e centratura universale */
+    button, .btn-touch, input, select { 
       min-height: 48px; 
       font-size: 1.05rem; 
+    }
+    
+    button, .btn-touch {
       display: inline-flex !important; 
       align-items: center !important; 
       justify-content: center !important; 
@@ -120,7 +123,7 @@
         </div>
         
         <button onclick="handleRegister()" id="btn-register" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-lg shadow-lg shadow-emerald-600/20">
-          Registra e Attiva Account
+          Invia Richiesta Registrazione
         </button>
         <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium !min-h-0">Torna al Login</button>
       </div>
@@ -151,7 +154,7 @@
         <span>Sistema Vaccinale</span>
       </div>
 
-      <div id="doctor-nav-tabs" class="flex gap-2 bg-sky-900/60 p-1.5 rounded-2xl border border-sky-800">
+      <div id="doctor-nav-tabs" class="flex flex-wrap gap-2 bg-sky-900/60 p-1.5 rounded-2xl border border-sky-800">
         <button id="tab-btn-hub" onclick="switchAppTab('hub')" class="px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0">
           🏠 Home
         </button>
@@ -159,7 +162,10 @@
           📋 Modulo Vaccinale
         </button>
         <button id="tab-btn-lotti" onclick="switchAppTab('lotti')" class="px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0">
-          📦 Gestione Lotti Vaccini
+          📦 Gestione Lotti
+        </button>
+        <button id="tab-btn-report" onclick="switchAppTab('report')" class="px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0">
+          📊 Report Consensi
         </button>
       </div>
 
@@ -173,23 +179,29 @@
     </div>
 
     <!-- VISTA HUB -->
-    <div id="view-hub" class="p-6 max-w-4xl mx-auto w-full flex-grow flex flex-col justify-center items-center">
+    <div id="view-hub" class="p-6 max-w-5xl mx-auto w-full flex-grow flex flex-col justify-center items-center">
       <div class="text-center mb-8">
         <h2 class="text-3xl font-black text-sky-950">Seleziona Operazione</h2>
         <p class="text-slate-600 font-medium mt-1">Scegli la funzionalità a cui accedere per proseguire</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         <button onclick="switchAppTab('modulo')" class="flex flex-col items-center justify-center p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
           <span class="text-5xl mb-4">📋</span>
-          <span class="text-2xl font-black text-sky-950">Modulo Vaccinale</span>
+          <span class="text-xl font-black text-sky-950">Modulo Vaccinale</span>
           <span class="text-xs text-sky-600 font-bold mt-2">Compilazione consenso & Firma digitale</span>
         </button>
 
         <button id="hub-btn-lotti" onclick="switchAppTab('lotti')" class="flex flex-col items-center justify-center p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
           <span class="text-5xl mb-4">📦</span>
-          <span class="text-2xl font-black text-sky-950">Gestione Lotti Vaccinali</span>
-          <span class="text-xs text-sky-600 font-bold mt-2">Registro, conteggio dosi & stato giacenze</span>
+          <span class="text-xl font-black text-sky-950">Gestione Lotti</span>
+          <span class="text-xs text-sky-600 font-bold mt-2">Registro, dosi & giacenze</span>
+        </button>
+
+        <button onclick="switchAppTab('report')" class="flex flex-col items-center justify-center p-8 bg-white hover:bg-sky-50 border-2 border-sky-200 hover:border-sky-500 rounded-3xl shadow-xl transition-all text-center">
+          <span class="text-5xl mb-4">📊</span>
+          <span class="text-xl font-black text-sky-950">Report Consensi</span>
+          <span class="text-xs text-sky-600 font-bold mt-2">Storico somministrazioni & PDF Drive</span>
         </button>
       </div>
     </div>
@@ -233,7 +245,7 @@
           
           <div class="relative mb-6">
             <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Cerca Anagrafica Paziente</label>
-            <input type="text" id="patient-search-input" oninput="onPatientSearchInput(this.value)" placeholder="Digita Cognome, Nome o Codice Fiscale..." class="w-full px-5 border-2 border-sky-200 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/30">
+            <input type="text" id="patient-search-input" oninput="onPatientSearchInput(this.value)" placeholder="Digita l'inizio di Cognome, Nome o Codice Fiscale..." class="w-full px-5 border-2 border-sky-200 rounded-2xl focus:border-sky-500 outline-none bg-sky-50/30">
             <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-100"></div>
           </div>
 
@@ -270,7 +282,10 @@
             </div>
             <div>
               <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Luogo di Somministrazione</label>
-              <input type="text" id="vaccine-location" value="STUDIO/AMBULATORIO" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-medium">
+              <select id="vaccine-location" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none bg-white font-medium">
+                <option value="STUDIO/AMBULATORIO">STUDIO/AMBULATORIO</option>
+                <option value="DOMICILIARE">DOMICILIARE</option>
+              </select>
             </div>
           </div>
         </div>
@@ -440,12 +455,82 @@
       </div>
     </div>
 
+    <!-- VISTA REPORT CONSENSI -->
+    <div id="view-report" class="hidden p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-6">
+      <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-200">
+        
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-sky-950 flex items-center gap-2">
+              <span>📊</span> Report Consensi Vaccinali
+            </h2>
+            <p class="text-xs text-slate-500 font-medium mt-1">Storico consensi salvati nel database e consultazione PDF</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button onclick="resetReportFilters()" class="btn-touch bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 rounded-xl border border-slate-300 !min-h-[44px]">
+              🧹 Azzera Filtri
+            </button>
+            <button onclick="loadReportConsensi()" class="btn-touch bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-4 rounded-xl shadow-md !min-h-[44px]">
+              🔄 Aggiorna Dati
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-sky-50/70 border border-sky-100 p-4 rounded-2xl mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Da Data Inserimento</label>
+            <input type="date" id="report-filter-date-from" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-sm font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">A Data Inserimento</label>
+            <input type="date" id="report-filter-date-to" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-sm font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Cognome, Nome o CF</label>
+            <input type="text" id="report-filter-search" oninput="applyReportFilters()" placeholder="Cerca cognome, nome, CF..." class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-sm font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Tipologia Vaccino</label>
+            <select id="report-filter-vaccine" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-sm font-medium">
+              <option value="">-- Tutti i Vaccini --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs uppercase text-slate-500 bg-slate-50">
+                <th class="p-3 font-extrabold">Data e Ora</th>
+                <th class="p-3 font-extrabold">Paziente</th>
+                <th class="p-3 font-extrabold">Codice Fiscale</th>
+                <th class="p-3 font-extrabold">Data Nascita</th>
+                <th class="p-3 font-extrabold">Vaccino</th>
+                <th class="p-3 font-extrabold">N° Lotto</th>
+                <th class="p-3 font-extrabold text-center">Documento PDF</th>
+              </tr>
+            </thead>
+            <tbody id="report-consensi-tbody" class="divide-y divide-slate-100 text-sm">
+              <tr>
+                <td colspan="7" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
     let currentStep = 1;
     let selectedPatient = null;
     let availableVaccines = [];
+    let reportDataCache = [];
     let currentUserRole = '';
     let searchDebounce = null;
     
@@ -456,7 +541,6 @@
 
     const canvasStates = { 'canvas-patient-vaccino': false, 'canvas-patient-biometrico': false, 'canvas-doctor': false };
 
-    // Gestione Persistenza Sessione Browser (SessionStorage)
     function saveSession(name, role, tab = 'hub') {
       const sessionData = { name: name, role: role, currentTab: tab };
       sessionStorage.setItem('app_user_session', JSON.stringify(sessionData));
@@ -625,12 +709,12 @@
       if (!nome || !cognome || !email || !pass || !confirmPass) return showToast("Compila tutti i campi", "error");
       if (!checkPasswordRules()) return showToast("La password non rispetta i requisiti", "error");
 
-      btn.innerText = "Registrazione in corso...";
+      btn.innerText = "Invio in corso...";
       btn.disabled = true;
 
       try {
         const res = await runServerFunction('registerUser', nome, cognome, email, pass, confirmPass);
-        btn.innerText = "Registra e Attiva Account";
+        btn.innerText = "Invia Richiesta Registrazione";
         btn.disabled = false;
         if (res.success) {
           showToast(res.message);
@@ -640,7 +724,7 @@
           showToast(res.message, "error");
         }
       } catch (err) {
-        btn.innerText = "Registra e Attiva Account";
+        btn.innerText = "Invia Richiesta Registrazione";
         btn.disabled = false;
         showToast("Errore durante la registrazione", "error");
       }
@@ -684,14 +768,17 @@
       const viewHub = document.getElementById('view-hub');
       const viewModulo = document.getElementById('view-modulo');
       const viewLotti = document.getElementById('view-gestione-lotti');
+      const viewReport = document.getElementById('view-report');
 
       const btnHub = document.getElementById('tab-btn-hub');
       const btnModulo = document.getElementById('tab-btn-modulo');
       const btnLotti = document.getElementById('tab-btn-lotti');
+      const btnReport = document.getElementById('tab-btn-report');
 
       viewHub.classList.add('hidden');
       viewModulo.classList.add('hidden');
       viewLotti.classList.add('hidden');
+      viewReport.classList.add('hidden');
 
       const activeStyle = "px-4 py-2 rounded-xl font-bold text-sm bg-white text-sky-950 shadow-sm transition-all !min-h-0";
       const inactiveStyle = "px-4 py-2 rounded-xl font-bold text-sm text-sky-200 hover:text-white transition-all !min-h-0";
@@ -699,6 +786,7 @@
       if (btnHub) btnHub.className = inactiveStyle;
       if (btnModulo) btnModulo.className = inactiveStyle;
       if (btnLotti) btnLotti.className = inactiveStyle;
+      if (btnReport) btnReport.className = inactiveStyle;
 
       const session = getSession();
       if (session) {
@@ -716,7 +804,109 @@
         viewLotti.classList.remove('hidden');
         if (btnLotti) btnLotti.className = activeStyle;
         loadManagementVaccines();
+      } else if (tab === 'report') {
+        viewReport.classList.remove('hidden');
+        if (btnReport) btnReport.className = activeStyle;
+        loadReportConsensi();
       }
+    }
+
+    async function loadReportConsensi() {
+      const tbody = document.getElementById('report-consensi-tbody');
+      tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td></tr>`;
+
+      try {
+        reportDataCache = await runServerFunction('getConsensiReportData') || [];
+        populateReportVaccineDropdown(reportDataCache);
+        applyReportFilters();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500 font-bold">Errore nel recupero del report.</td></tr>`;
+      }
+    }
+
+    function populateReportVaccineDropdown(dataList) {
+      const select = document.getElementById('report-filter-vaccine');
+      if (!select) return;
+
+      const currentValue = select.value;
+      const uniqueVaccines = [...new Set(dataList.map(item => item.denominazioneVaccino).filter(v => v.trim() !== ''))].sort();
+
+      select.innerHTML = '<option value="">-- Tutti i Vaccini --</option>';
+      uniqueVaccines.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+
+      if (uniqueVaccines.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    }
+
+    function applyReportFilters() {
+      const dateFrom = document.getElementById('report-filter-date-from')?.value || '';
+      const dateTo = document.getElementById('report-filter-date-to')?.value || '';
+      const searchTerms = (document.getElementById('report-filter-search')?.value || '').toLowerCase().trim().split(' ').filter(w => w.length > 0);
+      const selectedVaccine = (document.getElementById('report-filter-vaccine')?.value || '').toLowerCase().trim();
+
+      const filtered = reportDataCache.filter(item => {
+        if (dateFrom && item.isoDate && item.isoDate < dateFrom) return false;
+        if (dateTo && item.isoDate && item.isoDate > dateTo) return false;
+        if (selectedVaccine && item.denominazioneVaccino.toLowerCase().trim() !== selectedVaccine) return false;
+
+        if (searchTerms.length > 0) {
+          const fullText = `${item.cognome} ${item.nome} ${item.codiceFiscale}`.toLowerCase();
+          const matchesAllWords = searchTerms.every(term => fullText.includes(term));
+          if (!matchesAllWords) return false;
+        }
+
+        return true;
+      });
+
+      renderReportTable(filtered);
+    }
+
+    function resetReportFilters() {
+      document.getElementById('report-filter-date-from').value = '';
+      document.getElementById('report-filter-date-to').value = '';
+      document.getElementById('report-filter-search').value = '';
+      document.getElementById('report-filter-vaccine').value = '';
+      applyReportFilters();
+    }
+
+    function renderReportTable(dataList) {
+      const tbody = document.getElementById('report-consensi-tbody');
+      if (!dataList || dataList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 italic">Nessun record trovato con i filtri selezionati.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      dataList.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition-colors";
+        
+        const pdfButtonHtml = item.pdfUrl 
+          ? `<a href="${item.pdfUrl}" target="_blank" class="btn-touch inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold text-xs rounded-xl transition-all border border-sky-300 !min-h-[40px]">
+               📄 Apri PDF
+             </a>`
+          : `<span class="text-xs text-slate-400 italic">Non disponibile</span>`;
+
+        tr.innerHTML = `
+          <td class="p-3">
+            <span class="block font-bold text-slate-800">${item.giorno}</span>
+            <span class="block text-xs font-semibold text-slate-500">${item.orario}</span>
+          </td>
+          <td class="p-3 font-bold text-slate-900">${item.cognome} ${item.nome}</td>
+          <td class="p-3 font-mono font-bold text-slate-700 text-xs">${item.codiceFiscale}</td>
+          <td class="p-3 font-medium text-slate-600 text-xs">${item.dataNascita}</td>
+          <td class="p-3 font-medium text-slate-800">${item.denominazioneVaccino}</td>
+          <td class="p-3 font-mono text-xs font-extrabold ${item.consenso === 'Sì' ? 'text-sky-900' : 'text-rose-600'}">${item.numeroLotto}</td>
+          <td class="p-3 text-center">${pdfButtonHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function setConsentChoice(type, choice) {
@@ -908,7 +1098,6 @@
       document.getElementById('vaccine-lotto').value = (idx !== "" && availableVaccines[idx]) ? availableVaccines[idx].lotto : "";
     }
 
-    // GESTIONE LOTTI VACCINI (AGGIORNAMENTO PUNTUALE TRAMITE PULSANTE "AGGIORNA DOSI")
     async function loadManagementVaccines() {
       const tbody = document.getElementById('management-vaccines-tbody');
       tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Aggiornamento registro in corso...</td></tr>`;

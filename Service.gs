@@ -1,12 +1,84 @@
 /**
- * Service.gs - Servizi di Business Logic e Gestione Dati
+ * Service.gs - Servizi di Business Logic, Rendering e Gestione Dati
  */
 
+// Entry point principale per l'applicazione Web App
 function doGet(e) {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Sistema Vaccinale - Studio Medico')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+}
+
+// Helper per formattare qualsiasi valore Data in stringa GG/MM/AAAA pulita
+function formatDateOnly(value) {
+  if (!value) return '-';
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return '-';
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  }
+  
+  const strVal = String(value).trim();
+  if (strVal.includes('T') || strVal.includes('GMT')) {
+    const d = new Date(strVal);
+    if (!isNaN(d.getTime())) {
+      return Utilities.formatDate(d, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+    }
+  }
+  return strVal;
+}
+
+// Restituisce lo storico dei consensi per la generazione del Report
+function getConsensiReportData() {
+  const sheet = getDb().getSheetByName(SHEET_CONSENSI);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+
+  const headers = data.shift().map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+  
+  const tsIdx = headers.indexOf('timestamp');
+  const cognomeIdx = headers.indexOf('cognome');
+  const nomeIdx = headers.indexOf('nome');
+  const cfIdx = headers.indexOf('codicefiscale');
+  const dobIdx = headers.indexOf('datanascita');
+  const vacIdx = headers.indexOf('denominazionevaccino');
+  const lottoIdx = headers.indexOf('numerolotto');
+  const consensoIdx = headers.indexOf('consensosomministrazione');
+  const pdfIdx = headers.indexOf('pdfurl');
+
+  return data.map(row => {
+    const rawTs = row[tsIdx];
+    let giorno = '-';
+    let orario = '-';
+    let isoDate = '';
+
+    if (rawTs) {
+      const d = new Date(rawTs);
+      if (!isNaN(d.getTime())) {
+        giorno = Utilities.formatDate(d, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+        orario = Utilities.formatDate(d, Session.getScriptTimeZone(), 'HH:mm');
+        isoDate = Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      }
+    }
+
+    const haConsenso = String(row[consensoIdx] || '').toLowerCase().includes('sì') || 
+                       String(row[consensoIdx] || '').toLowerCase().includes('acconsente');
+
+    return {
+      giorno: giorno,
+      orario: orario,
+      isoDate: isoDate,
+      cognome: row[cognomeIdx] || '',
+      nome: row[nomeIdx] || '',
+      codiceFiscale: row[cfIdx] || '',
+      dataNascita: formatDateOnly(row[dobIdx]),
+      denominazioneVaccino: row[vacIdx] || '',
+      numeroLotto: haConsenso ? (row[lottoIdx] || 'N/D') : 'Consenso Negato',
+      consenso: haConsenso ? 'Sì' : 'No',
+      pdfUrl: row[pdfIdx] || ''
+    };
+  }).reverse();
 }
 
 // Restituisce SOLO i vaccini disponibili con almeno 1 dose per la compilazione del modulo
@@ -144,6 +216,7 @@ function decrementVaccineDose(denominazione, lotto) {
   }
 }
 
+// Ricerca suggerimenti anagrafica pazienti basata su prefisso INIZIALE delle parole (startsWith)
 function getPatientSuggestions(searchTerm) {
   if (!searchTerm || searchTerm.trim().length < 3) return [];
 
@@ -211,10 +284,23 @@ function getPatientSuggestions(searchTerm) {
     const cognome = (row[cognomeIdx] || '').toString().toLowerCase().trim();
     const nome = (row[nomeIdx] || '').toString().toLowerCase().trim();
 
-    const fullStr = `${nome} ${cognome} ${cf}`;
-    if (searchWords.every(word => fullStr.includes(word))) {
+    // Estraiamo tutti i sotto-termini dell'anagrafica (es. per cognomi o nomi composti)
+    const patientTerms = `${nome} ${cognome} ${cf}`.split(/\s+/).filter(t => t.length > 0);
+
+    // Verifichiamo che OGNI parola cercata dall'utente corrisponda all'INIZIO (startsWith) di almeno una parola del paziente
+    const isMatch = searchWords.every(sWord => 
+      patientTerms.some(pTerm => pTerm.startsWith(sWord))
+    );
+
+    if (isMatch) {
       let patientObj = {};
-      headers.forEach((hKey, idx) => { patientObj[hKey] = row[idx]; });
+      headers.forEach((hKey, idx) => { 
+        let rawVal = row[idx];
+        if (hKey === 'datanascita' || rawVal instanceof Date) {
+          rawVal = formatDateOnly(rawVal);
+        }
+        patientObj[hKey] = rawVal; 
+      });
       suggestions.push(patientObj);
       if (suggestions.length >= 10) break;
     }
@@ -222,6 +308,7 @@ function getPatientSuggestions(searchTerm) {
   return suggestions;
 }
 
+// Registrazione eventi di log
 function logAction(user, action) {
   let sheet = getDb().getSheetByName(SHEET_LOGS);
   if (!sheet) {

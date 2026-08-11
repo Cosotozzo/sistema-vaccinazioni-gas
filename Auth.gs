@@ -1,17 +1,30 @@
 /**
- * Auth.gs - Modulo di Autenticazione e Sicurezza
+ * Auth.gs - Modulo di Autenticazione e Sicurezza (Email Case-Insensitive, Password Case-Sensitive)
  */
 
 function checkLogin(email, password) {
+  const cleanEmail = (email || '').toString().toLowerCase().trim();
+  const inputHash = hashPassword(password); // La password rimane case-sensitive
+  
   const sheet = getDb().getSheetByName(SHEET_ACCOUNTS);
   const data = sheet.getDataRange().getValues();
-  const inputHash = hashPassword(password);
   
   for (let i = 1; i < data.length; i++) {
-    if (data[i][2] === email && data[i][3] === inputHash) { 
+    const dbEmail = (data[i][2] || '').toString().toLowerCase().trim();
+    const dbHash = data[i][3];
+    
+    if (dbEmail === cleanEmail && dbHash === inputHash) { 
       const fullName = `${data[i][0]} ${data[i][1]}`;
-      // Recupero ruolo da Colonna E (indice 4), default 'medico' se vuoto
-      const role = (data[i][4] || 'medico').toString().toLowerCase().trim();
+      const role = (data[i][4] || '').toString().toLowerCase().trim();
+      
+      // BLOCCO ACCESSO: Se il ruolo non è assegnato dall'Amministratore
+      if (!role) {
+        logAction(fullName, 'Tentativo di login fallito: Ruolo non ancora assegnato');
+        return { 
+          success: false, 
+          message: 'Account registrato ma non ancora abilitato. In attesa di assegnazione del ruolo da parte dell\'Amministratore.' 
+        };
+      }
       
       logAction(fullName, `Login effettuato (Ruolo: ${role})`);
       return { 
@@ -33,29 +46,37 @@ function registerUser(nome, cognome, email, password, confirmPassword) {
     return { success: false, message: 'La password deve contenere almeno 8 caratteri, 1 carattere speciale e almeno 2 numeri.' };
   }
 
+  const cleanEmail = (email || '').toString().toLowerCase().trim();
   const sheet = getDb().getSheetByName(SHEET_ACCOUNTS);
   const data = sheet.getDataRange().getValues();
   
+  // Controllo duplicati case-insensitive
   for (let i = 1; i < data.length; i++) {
-    if (data[i][2] === email) {
+    const dbEmail = (data[i][2] || '').toString().toLowerCase().trim();
+    if (dbEmail === cleanEmail) {
       return { success: false, message: 'Indirizzo email già registrato.' };
     }
   }
   
   const hashedPass = hashPassword(password);
-  // Di default le nuove registrazioni vengono create come 'segretario' (modificabile da DB)
-  sheet.appendRow([nome, cognome, email, hashedPass, 'segretario']);
-  logAction(`${nome} ${cognome}`, 'Registrazione nuova utenza (segretario)');
+  // Salviamo l'email già normalizzata in minuscolo sul DB
+  sheet.appendRow([nome, cognome, cleanEmail, hashedPass, '']);
+  logAction(`${nome} ${cognome}`, 'Registrazione nuova utenza (In attesa di attivazione)');
   
-  return { success: true, message: 'Account registrato con successo!' };
+  return { 
+    success: true, 
+    message: 'Registrazione completata! Il tuo account sarà attivo non appena l\'Amministratore assegnerà il ruolo dal database.' 
+  };
 }
 
 function recoverPassword(email) {
+  const cleanEmail = (email || '').toString().toLowerCase().trim();
   const sheet = getDb().getSheetByName(SHEET_ACCOUNTS);
   const data = sheet.getDataRange().getValues();
   
   for (let i = 1; i < data.length; i++) {
-    if (data[i][2] === email) {
+    const dbEmail = (data[i][2] || '').toString().toLowerCase().trim();
+    if (dbEmail === cleanEmail) {
       const fullName = `${data[i][0]} ${data[i][1]}`;
       const tempPass = Math.random().toString(36).slice(-8) + "12!"; 
       const tempHash = hashPassword(tempPass);
@@ -65,7 +86,7 @@ function recoverPassword(email) {
       const subject = "Reset Accesso - Studio Medico";
       const body = `Gentile ${fullName},\n\nLa tua nuova password temporanea è: ${tempPass}\n\nAmministrazione Studio Medico`;
       
-      GmailApp.sendEmail(email, subject, body);
+      GmailApp.sendEmail(cleanEmail, subject, body);
       logAction(fullName, 'Richiesta reset password');
       return { success: true, message: 'Password temporanea inviata via email.' };
     }
