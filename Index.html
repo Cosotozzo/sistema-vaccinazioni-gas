@@ -141,6 +141,14 @@
         </button>
         <button onclick="toggleAuthSection('login-section')" class="w-full text-slate-500 p-2 text-sm font-medium !min-h-0">Annulla</button>
       </div>
+      
+      <!-- DASHBOARD NON AUTORIZZATA -->
+      <div id="unauthorized-section" class="hidden text-center space-y-4 py-8">
+        <div class="text-rose-500 text-5xl mb-4">🚫</div>
+        <h2 class="text-2xl font-black text-slate-800">Accesso Negato</h2>
+        <p class="text-slate-600 font-medium">L'utenza non è stata autorizzata. Contattare l'amministratore del database per l'assegnazione del ruolo (Medico o Segretario).</p>
+        <button onclick="toggleAuthSection('login-section')" class="btn-touch mt-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl px-6 py-2">Torna al Login</button>
+      </div>
 
     </div>
   </div>
@@ -262,9 +270,6 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm text-slate-700">
               <div><strong>Codice Fiscale:</strong> <span id="patient-card-cf"></span></div>
               <div><strong>Data Nascita:</strong> <span id="patient-card-dob"></span></div>
-              <div><strong>Sesso:</strong> <span id="patient-card-sex"></span></div>
-              <div><strong>Telefono:</strong> <span id="patient-card-phone"></span></div>
-              <div class="sm:col-span-2"><strong>Indirizzo:</strong> <span id="patient-card-address"></span></div>
             </div>
           </div>
         </div>
@@ -387,7 +392,7 @@
             <div class="font-black text-amber-900 text-sm mb-1 flex items-center gap-1.5">
               ⚠️ ATTENZIONE - MODULO CARTACEO OBBLIGATORIO
             </div>
-            <span>Il consenso GDPR/Firma Digitale è stato NEGATO. Procedendo, la dose verrà comunque **scalata dal magazzino**, ma è **OBBLIGATORIO far firmare al paziente il modulo cartaceo**.</span>
+            <span>Il consenso GDPR/Firma Digitale è stato NEGATO. Procedendo, la dose verrà comunque <strong>scalata dal magazzino</strong>, ma è <strong>OBBLIGATORIO far firmare al paziente il modulo cartaceo e salvarlo in automatico all'interno della cartella sul NAS Synology DS218J (NAS Studio Baroni)</strong>.</span>
           </div>
 
           <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-lg sm:text-xl shadow-xl shadow-emerald-600/30">
@@ -427,7 +432,7 @@
           </div>
           <div class="sm:col-span-1">
             <label class="block text-xs font-bold mb-1 text-slate-600 uppercase">Dosi Iniziali</label>
-            <input type="number" id="new-vaccine-dosi" placeholder="es. 50" min="1" value="50" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-bold">
+            <input type="number" id="new-vaccine-dosi" placeholder="es. 50" min="1" class="w-full px-4 border-2 border-slate-200 rounded-2xl focus:border-sky-500 outline-none font-bold">
           </div>
           <div class="sm:col-span-1 flex items-end">
             <button onclick="handleCreateVaccineBatch()" id="btn-add-vaccine" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20">
@@ -488,7 +493,7 @@
           </div>
         </div>
 
-        <div class="bg-sky-50/70 border border-sky-100 p-4 rounded-2xl mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-sky-50/70 border border-sky-100 p-4 rounded-2xl mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Da Data</label>
             <input type="date" id="report-filter-date-from" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
@@ -510,10 +515,28 @@
               <option value="">-- Tutti i Vaccini --</option>
             </select>
           </div>
+
+          <div>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Esito Vaccino</label>
+            <select id="report-filter-esito" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
+              <option value="">-- Tutti --</option>
+              <option value="Sì">Somministrato</option>
+              <option value="No">Non Somministrato (Diniego)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Stato GDPR</label>
+            <select id="report-filter-gdpr" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
+              <option value="">-- Tutti --</option>
+              <option value="Sì">Acconsente</option>
+              <option value="No">Non Acconsente</option>
+            </select>
+          </div>
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse min-w-[750px]">
+          <table class="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr class="border-b border-slate-200 text-xs uppercase text-slate-500 bg-slate-50">
                 <th class="p-3 font-extrabold">Data e Ora</th>
@@ -522,12 +545,13 @@
                 <th class="p-3 font-extrabold">Data Nascita</th>
                 <th class="p-3 font-extrabold">Vaccino</th>
                 <th class="p-3 font-extrabold">N° Lotto</th>
+                <th class="p-3 font-extrabold text-center">GDPR</th>
                 <th class="p-3 font-extrabold text-center">Documento PDF</th>
               </tr>
             </thead>
             <tbody id="report-consensi-tbody" class="divide-y divide-slate-100 text-xs sm:text-sm">
               <tr>
-                <td colspan="7" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td>
+                <td colspan="8" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td>
               </tr>
             </tbody>
           </table>
@@ -627,8 +651,9 @@
     }
 
     function toggleAuthSection(sectionId) {
-      ['login-section', 'recover-section', 'register-section'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+      ['login-section', 'recover-section', 'register-section', 'unauthorized-section'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
       });
       document.getElementById(sectionId).classList.remove('hidden');
     }
@@ -678,6 +703,11 @@
         btn.innerText = "Accedi al Sistema";
         btn.disabled = false;
         
+        if (response.isUnauthorized) {
+          toggleAuthSection('unauthorized-section');
+          return;
+        }
+
         if (response.success) {
           currentUserRole = response.role;
           showToast(`Benvenuto/a, ${response.name}`);
@@ -847,14 +877,14 @@
 
     async function loadReportConsensi() {
       const tbody = document.getElementById('report-consensi-tbody');
-      tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td></tr>`;
 
       try {
         reportDataCache = await runServerFunction('getConsensiReportData') || [];
         populateReportVaccineDropdown(reportDataCache);
         applyReportFilters();
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500 font-bold">Errore nel recupero del report.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-rose-500 font-bold">Errore nel recupero del report.</td></tr>`;
       }
     }
 
@@ -883,11 +913,15 @@
       const dateTo = document.getElementById('report-filter-date-to')?.value || '';
       const searchTerms = (document.getElementById('report-filter-search')?.value || '').toLowerCase().trim().split(' ').filter(w => w.length > 0);
       const selectedVaccine = (document.getElementById('report-filter-vaccine')?.value || '').toLowerCase().trim();
+      const selectedEsito = document.getElementById('report-filter-esito')?.value || '';
+      const selectedGdpr = document.getElementById('report-filter-gdpr')?.value || '';
 
       const filtered = reportDataCache.filter(item => {
         if (dateFrom && item.isoDate && item.isoDate < dateFrom) return false;
         if (dateTo && item.isoDate && item.isoDate > dateTo) return false;
         if (selectedVaccine && item.denominazioneVaccino.toLowerCase().trim() !== selectedVaccine) return false;
+        if (selectedEsito && item.consenso !== selectedEsito) return false;
+        if (selectedGdpr && item.gdpr !== selectedGdpr) return false;
 
         if (searchTerms.length > 0) {
           const fullText = `${item.cognome} ${item.nome} ${item.codiceFiscale}`.toLowerCase();
@@ -906,13 +940,15 @@
       document.getElementById('report-filter-date-to').value = '';
       document.getElementById('report-filter-search').value = '';
       document.getElementById('report-filter-vaccine').value = '';
+      document.getElementById('report-filter-esito').value = '';
+      document.getElementById('report-filter-gdpr').value = '';
       applyReportFilters();
     }
 
     function renderReportTable(dataList) {
       const tbody = document.getElementById('report-consensi-tbody');
       if (!dataList || dataList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 italic">Nessun record trovato con i filtri selezionati.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 italic">Nessun record trovato con i filtri selezionati.</td></tr>`;
         return;
       }
 
@@ -937,6 +973,7 @@
           <td class="p-3 font-medium text-slate-600 text-xs">${item.dataNascita}</td>
           <td class="p-3 font-medium text-slate-800">${item.denominazioneVaccino}</td>
           <td class="p-3 font-mono text-xs font-extrabold ${item.consenso === 'Sì' ? 'text-sky-900' : 'text-rose-600'}">${item.numeroLotto}</td>
+          <td class="p-3 text-center font-bold ${item.gdpr === 'Sì' ? 'text-emerald-600' : 'text-rose-600'}">${item.gdpr}</td>
           <td class="p-3 text-center">${pdfButtonHtml}</td>
         `;
         tbody.appendChild(tr);
@@ -1109,9 +1146,6 @@
       document.getElementById('patient-card-name').innerText = `${p.cognome || ''} ${p.nome || ''}`;
       document.getElementById('patient-card-cf').innerText = p.codicefiscale || '-';
       document.getElementById('patient-card-dob').innerText = p.datanascita || '-';
-      document.getElementById('patient-card-sex').innerText = p.sesso || '-';
-      document.getElementById('patient-card-phone').innerText = p.telefono || '-';
-      document.getElementById('patient-card-address').innerText = `${p.indirizzo || ''} ${p.comuneresidenza || ''}`;
       
       document.getElementById('selected-patient-card').classList.remove('hidden');
       showToast("Paziente selezionato");
@@ -1210,7 +1244,7 @@
           showToast(res.message);
           nameInput.value = "";
           lottoInput.value = "";
-          dosiInput.value = "50";
+          dosiInput.value = "";
           loadManagementVaccines();
         } else {
           showToast(res.message, "error");
@@ -1363,12 +1397,6 @@
           nome: selectedPatient.nome || '',
           codicefiscale: selectedPatient.codicefiscale || '',
           datanascita: selectedPatient.datanascita || '',
-          sesso: selectedPatient.sesso || '',
-          ssr: selectedPatient.ssr || '',
-          residenza: selectedPatient.residenza || '',
-          indirizzo: selectedPatient.indirizzo || '',
-          comuneresidenza: selectedPatient.comuneresidenza || '',
-          telefono: selectedPatient.telefono || '',
           vaccinoDenominazione: vData.denominazione || '',
           vaccinoLotto: vData.lotto || '',
           luogoVaccinazione: document.getElementById('vaccine-location').value || 'STUDIO/AMBULATORIO',

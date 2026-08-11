@@ -45,6 +45,7 @@ function getConsensiReportData() {
   const vacIdx = headers.indexOf('denominazionevaccino');
   const lottoIdx = headers.indexOf('numerolotto');
   const consensoIdx = headers.indexOf('consensosomministrazione');
+  const gdprIdx = headers.indexOf('consensoprivacy');
   const pdfIdx = headers.indexOf('pdfurl');
 
   return data.map(row => {
@@ -64,6 +65,9 @@ function getConsensiReportData() {
 
     const haConsenso = String(row[consensoIdx] || '').toLowerCase().includes('sì') || 
                        String(row[consensoIdx] || '').toLowerCase().includes('acconsente');
+                       
+    const haGdpr = String(row[gdprIdx] || '').toLowerCase().includes('sì') || 
+                   String(row[gdprIdx] || '').toLowerCase().includes('acconsente');
 
     return {
       giorno: giorno,
@@ -76,6 +80,7 @@ function getConsensiReportData() {
       denominazioneVaccino: row[vacIdx] || '',
       numeroLotto: haConsenso ? (row[lottoIdx] || 'N/D') : 'Consenso Negato',
       consenso: haConsenso ? 'Sì' : 'No',
+      gdpr: haGdpr ? 'Sì' : 'No',
       pdfUrl: row[pdfIdx] || ''
     };
   }).reverse();

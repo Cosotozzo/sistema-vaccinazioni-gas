@@ -119,27 +119,13 @@ function createPdfHtml(data) {
           <div class="col"><span class="label">Nome:</span> <span class="value">${data.nome || ''}</span></div>
         </div>
         <div class="grid-2">
-          <div class="col"><span class="label">Sesso:</span> <span class="value">${data.sesso || ''}</span></div>
+          <div class="col"><span class="label">Codice Fiscale:</span> <span class="value">${data.codicefiscale || ''}</span></div>
           <div class="col"><span class="label">Data di Nascita:</span> <span class="value">${data.datanascita || ''}</span></div>
         </div>
-        <div class="col-full"><span class="label">Codice Fiscale:</span> <span class="value">${data.codicefiscale || ''}</span></div>
       </div>
 
       <div class="section-block">
-        <div class="section-title">2. Residenza e Contatti</div>
-        <div class="grid-2">
-          <div class="col"><span class="label">Iscritto al SSR:</span> <span class="value">${data.ssr || ''}</span></div>
-          <div class="col"><span class="label">Residente:</span> <span class="value">${data.residenza || ''}</span></div>
-        </div>
-        <div class="col-full"><span class="label">Indirizzo:</span> <span class="value">${data.indirizzo || ''}</span></div>
-        <div class="grid-2">
-          <div class="col"><span class="label">Comune:</span> <span class="value">${data.comuneresidenza || ''}</span></div>
-          <div class="col"><span class="label">Telefono:</span> <span class="value">${data.telefono || ''}</span></div>
-        </div>
-      </div>
-
-      <div class="section-block">
-        <div class="section-title">3. Consenso al Trattamento Dati Personali e Biometrici (GDPR)</div>
+        <div class="section-title">2. Consenso al Trattamento Dati Personali e Biometrici (GDPR)</div>
         <p style="margin: 0 0 4px 0;">Il/La sottoscritto/a, ai sensi del Regolamento UE 2016/679, dichiara che:</p>
         <ul>
           <li>I dati personali e sanitari saranno trattati esclusivamente per finalità connesse alla prestazione sanitaria.</li>
@@ -156,7 +142,7 @@ function createPdfHtml(data) {
       </div>
 
       <div class="section-block">
-        <div class="section-title">4. Dati e Consenso alla Vaccinazione</div>
+        <div class="section-title">3. Dati e Consenso alla Vaccinazione</div>
         <div class="grid-2">
           <div class="col"><span class="label">Nome vaccino:</span> <span class="value">${data.vaccinoDenominazione || ''}</span></div>
           <div class="col"><span class="label">Lotto N:</span> <span class="value">${data.vaccinoLotto || ''}</span></div>
