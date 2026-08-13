@@ -326,7 +326,7 @@
             </div>
           </div>
 
-          <div>
+<div id="signature-block-gdpr">
             <div class="flex justify-between items-center mb-1">
               <label class="font-bold text-xs sm:text-sm text-slate-800">Firma Paziente (G.D.P.R. / Privacy)</label>
               <button onclick="clearCanvas('canvas-patient-biometrico')" class="text-xs text-rose-600 font-bold hover:underline !min-h-0">Pulisci Firma</button>
@@ -363,7 +363,7 @@
             </div>
           </div>
 
-          <div class="space-y-5">
+<div id="signature-blocks-vaccino" class="space-y-5">
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="font-bold text-xs sm:text-sm text-slate-800">1. Firma Paziente (Consenso Vaccinale)</label>
@@ -396,7 +396,7 @@
             <div class="font-black text-amber-900 text-sm mb-1 flex items-center gap-1.5">
               ⚠️ ATTENZIONE - MODULO CARTACEO OBBLIGATORIO
             </div>
-            <span>Il consenso GDPR/Firma Digitale è stato NEGATO. Procedendo, la dose verrà comunque <strong>scalata dal magazzino</strong>, ma è <strong>OBBLIGATORIO far firmare al paziente il modulo cartaceo e salvarlo in autonomia all'interno della cartella sul NAS KappaDory - Cartella Studio Baroni</strong>.</span>
+            <span>Il consenso G.D.P.R. e Firma Digitale Semplificata è stato NEGATO. <strong>Al fine di scalare la dose dal magazzino è necessario completare la procedura, si ricorda di far firmare al paziente il modulo cartaceo e salvarlo in autonomia all'interno del NAS nella cartella Studio Baroni</strong>.</span>
           </div>
 
           <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-lg sm:text-xl shadow-xl shadow-emerald-600/30">
@@ -841,7 +841,7 @@ function showToast(text, type = 'success') {
       showToast("Disconnessione effettuata");
     }
 
-    function resetModuloWizard() {
+function resetModuloWizard() {
       currentStep = 1;
       clearPatientSelection();
       clearCanvas('canvas-patient-vaccino');
@@ -858,6 +858,11 @@ function showToast(text, type = 'success') {
       if (btnVaccinoNo) btnVaccinoNo.className = "btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all";
       if (btnPrivacyYes) btnPrivacyYes.className = "btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-emerald-50 transition-all";
       if (btnPrivacyNo) btnPrivacyNo.className = "btn-touch w-full rounded-2xl font-black text-sm sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-600 hover:bg-rose-50 transition-all";
+
+      const gdprSig = document.getElementById('signature-block-gdpr');
+      const vaccinoSigs = document.getElementById('signature-blocks-vaccino');
+      if (gdprSig) gdprSig.classList.remove('hidden');
+      if (vaccinoSigs) vaccinoSigs.classList.remove('hidden');
 
       updateStepUI();
     }
@@ -1017,7 +1022,7 @@ const filtered = reportDataCache.filter(item => {
       });
     }
 
-    function setConsentChoice(type, choice) {
+function setConsentChoice(type, choice) {
       consentState[type] = choice;
 
       const btnYes = document.getElementById(type === 'consensoVaccino' ? 'btn-vaccino-yes' : 'btn-privacy-yes');
@@ -1029,8 +1034,33 @@ const filtered = reportDataCache.filter(item => {
       } else {
         btnNo.className = "btn-touch w-full rounded-2xl font-black text-xs sm:text-base bg-rose-600 text-white shadow-lg shadow-rose-600/30 border-2 border-rose-600 scale-[1.02] transition-all";
         btnYes.className = "btn-touch w-full rounded-2xl font-black text-xs sm:text-base border-2 border-slate-200 bg-slate-50 text-slate-400 hover:bg-emerald-50 transition-all opacity-60";
-        showToast("Registrazione del Mancato Consenso abilitata", "error");
       }
+      
+      updateSignatureVisibility();
+    }
+
+    function updateSignatureVisibility() {
+      const gdprSig = document.getElementById('signature-block-gdpr');
+      const vaccinoSigs = document.getElementById('signature-blocks-vaccino');
+      
+      if (consentState.consensoPrivacy === false) {
+        if (gdprSig) gdprSig.classList.add('hidden');
+        if (vaccinoSigs) vaccinoSigs.classList.add('hidden');
+        clearCanvas('canvas-patient-biometrico');
+        clearCanvas('canvas-patient-vaccino');
+        clearCanvas('canvas-doctor');
+      } else {
+        if (gdprSig) gdprSig.classList.remove('hidden');
+        
+        if (consentState.consensoVaccino === false) {
+          if (vaccinoSigs) vaccinoSigs.classList.add('hidden');
+          clearCanvas('canvas-patient-vaccino');
+          clearCanvas('canvas-doctor');
+        } else {
+          if (vaccinoSigs) vaccinoSigs.classList.remove('hidden');
+        }
+      }
+      setTimeout(() => resizeAllCanvases(), 50);
     }
 
     function initDashboard() {
@@ -1142,8 +1172,8 @@ const filtered = reportDataCache.filter(item => {
         <p><strong>Paziente:</strong> ${selectedPatient ? `${selectedPatient.cognome} ${selectedPatient.nome} (CF: ${selectedPatient.codicefiscale})` : 'Non selezionato'}</p>
         <p><strong>Vaccino:</strong> ${vData.denominazione} | <strong>Lotto:</strong> ${vData.lotto}</p>
         <p><strong>Luogo:</strong> ${document.getElementById('vaccine-location').value}</p>
-        <p><strong>Consenso GDPR & Biometria (Passo 3):</strong> ${privacyStatusHtml}</p>
-        <p><strong>Consenso Vaccinazione (Passo 4):</strong> ${vaccinoStatusHtml}</p>
+        <p><strong>Consenso G.D.P.R. & Firma Digitale Semplificata</strong> ${privacyStatusHtml}</p>
+        <p><strong>Consenso Vaccinazione:</strong> ${vaccinoStatusHtml}</p>
       `;
       document.getElementById('summary-content').innerHTML = html;
     }
