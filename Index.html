@@ -392,11 +392,18 @@
           
           <div id="summary-content" class="bg-sky-50/60 border border-sky-200 p-4 sm:p-5 rounded-2xl space-y-2.5 text-xs sm:text-sm mb-6"></div>
 
-          <div id="paper-warning-box" class="hidden p-4 mb-6 bg-amber-50 border-2 border-amber-400 rounded-2xl text-amber-900 text-xs sm:text-sm">
+<div id="paper-warning-box" class="hidden p-4 mb-6 bg-amber-50 border-2 border-amber-400 rounded-2xl text-amber-900 text-xs sm:text-sm">
             <div class="font-black text-amber-900 text-sm mb-1 flex items-center gap-1.5">
               ⚠️ ATTENZIONE - MODULO CARTACEO OBBLIGATORIO
             </div>
             <span>Il consenso G.D.P.R. e Firma Digitale Semplificata è stato NEGATO. <strong>Al fine di scalare la dose dal magazzino è necessario completare la procedura, si ricorda di far firmare al paziente il modulo cartaceo e salvarlo in autonomia all'interno del NAS nella cartella Studio Baroni</strong>.</span>
+          </div>
+
+          <div id="refusal-warning-box" class="hidden p-4 mb-6 bg-amber-50 border-2 border-amber-400 rounded-2xl text-amber-900 text-xs sm:text-sm">
+            <div class="font-black text-amber-900 text-sm mb-1 flex items-center gap-1.5">
+              ⚠️ AVVISO - CONSENSO VACCINALE NEGATO
+            </div>
+            <span>Il paziente ha <strong>rifiutato</strong> la somministrazione. La dose <strong>NON verrà scalata</strong> dal magazzino. Ai fini di tutela legale, il diniego verrà comunque salvato.</span>
           </div>
 
           <button onclick="submitConsent()" id="btn-submit-consent" class="btn-touch w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-lg sm:text-xl shadow-xl shadow-emerald-600/30">
@@ -549,14 +556,15 @@
                 <th class="p-3 font-extrabold">Data Nascita</th>
                 <th class="p-3 font-extrabold">Tipologia Vaccino</th>
                 <th class="p-3 font-extrabold text-center">N° Lotto</th>
-                <th class="p-3 font-extrabold text-center">Consenso Vaccino</th>
+<th class="p-3 font-extrabold text-center">Consenso Vaccino</th>
                 <th class="p-3 font-extrabold text-center">G.D.P.R.</th>
+                <th class="p-3 font-extrabold text-center">SAR Lazio</th>
                 <th class="p-3 font-extrabold text-center">PDF</th>
               </tr>
             </thead>
-            <tbody id="report-consensi-tbody" class="divide-y divide-slate-100 text-xs sm:text-sm">
+<tbody id="report-consensi-tbody" class="divide-y divide-slate-100 text-xs sm:text-sm">
               <tr>
-                <td colspan="8" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td>
+                <td colspan="9" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td>
               </tr>
             </tbody>
           </table>
@@ -913,12 +921,36 @@ function resetModuloWizard() {
         viewReport.classList.remove('hidden');
         if (btnReport) btnReport.className = activeStyle;
         loadReportConsensi();
+}
+    }
+
+    async function toggleSar(rowIndex, currentStatus) {
+      // Inverti lo stato localmente per dare feedback istantaneo all'utente, senza attendere il server
+      const item = reportDataCache.find(r => r.rowIndex === rowIndex);
+      if (item) {
+        item.sarLazio = currentStatus === 'Sì' ? 'No' : 'Sì';
+        applyReportFilters(); 
+      }
+
+      try {
+        const res = await runServerFunction('toggleSarLazioStatus', rowIndex, currentStatus);
+        if (!res.success) {
+          // Se fallisce, ripristina lo stato precedente
+          if (item) item.sarLazio = currentStatus;
+          applyReportFilters();
+          showToast(res.message, "error");
+        }
+      } catch (err) {
+        // Se c'è errore di rete, ripristina
+        if (item) item.sarLazio = currentStatus;
+        applyReportFilters();
+        showToast("Errore di connessione", "error");
       }
     }
 
     async function loadReportConsensi() {
       const tbody = document.getElementById('report-consensi-tbody');
-      tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 font-medium">Caricamento report in corso...</td></tr>`;
 
       try {
         reportDataCache = await runServerFunction('getConsensiReportData') || [];
@@ -988,18 +1020,21 @@ const filtered = reportDataCache.filter(item => {
 
     function renderReportTable(dataList) {
       const tbody = document.getElementById('report-consensi-tbody');
+const tbody = document.getElementById('report-consensi-tbody');
       if (!dataList || dataList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 italic">Nessun record trovato con i filtri selezionati.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 italic">Nessun record trovato con i filtri selezionati.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = "";
+tbody.innerHTML = "";
       dataList.forEach(item => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/80 transition-colors";
+        const isSar = item.sarLazio === 'Sì';
+        tr.className = `cursor-pointer transition-colors ${isSar ? 'bg-emerald-50 hover:bg-emerald-100' : 'hover:bg-slate-50/80'}`;
+        tr.onclick = () => toggleSar(item.rowIndex, item.sarLazio);
         
         const pdfButtonHtml = item.pdfUrl 
-          ? `<a href="${item.pdfUrl}" target="_blank" class="btn-touch inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold text-xs rounded-xl transition-all border border-sky-300 !min-h-[38px]">
+          ? `<a href="${item.pdfUrl}" target="_blank" onclick="event.stopPropagation()" class="btn-touch inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold text-xs rounded-xl transition-all border border-sky-300 !min-h-[38px]">
                📄 Apri PDF
              </a>`
           : `<span class="text-xs text-slate-400 italic">Non disponibile</span>`;
@@ -1013,9 +1048,10 @@ const filtered = reportDataCache.filter(item => {
           <td class="p-3 font-mono font-bold text-slate-700 text-xs align-middle">${item.codiceFiscale}</td>
           <td class="p-3 font-medium text-slate-600 text-xs align-middle">${item.dataNascita}</td>
           <td class="p-3 font-medium text-slate-800 align-middle">${item.denominazioneVaccino}</td>
-          <td class="p-3 text-center font-mono text-xs font-extrabold align-middle ${item.consenso === 'Sì' ? 'text-sky-900' : 'text-slate-400'}">${item.numeroLotto}</td>
+<td class="p-3 text-center font-mono text-xs font-extrabold align-middle ${item.consenso === 'Sì' ? 'text-sky-900' : 'text-slate-400'}">${item.numeroLotto}</td>
           <td class="p-3 text-center font-bold align-middle ${item.consenso === 'Sì' ? 'text-emerald-600' : 'text-rose-600'}">${item.consenso}</td>
           <td class="p-3 text-center font-bold align-middle ${item.gdpr === 'Sì' ? 'text-emerald-600' : 'text-rose-600'}">${item.gdpr}</td>
+          <td class="p-3 text-center align-middle text-lg">${isSar ? '✅' : '⬜'}</td>
           <td class="p-3 text-center align-middle">${pdfButtonHtml}</td>
         `;
         tbody.appendChild(tr);
@@ -1043,7 +1079,7 @@ function setConsentChoice(type, choice) {
       const gdprSig = document.getElementById('signature-block-gdpr');
       const vaccinoSigs = document.getElementById('signature-blocks-vaccino');
       
-      if (consentState.consensoPrivacy === false) {
+if (consentState.consensoPrivacy === false) {
         if (gdprSig) gdprSig.classList.add('hidden');
         if (vaccinoSigs) vaccinoSigs.classList.add('hidden');
         clearCanvas('canvas-patient-biometrico');
@@ -1051,14 +1087,7 @@ function setConsentChoice(type, choice) {
         clearCanvas('canvas-doctor');
       } else {
         if (gdprSig) gdprSig.classList.remove('hidden');
-        
-        if (consentState.consensoVaccino === false) {
-          if (vaccinoSigs) vaccinoSigs.classList.add('hidden');
-          clearCanvas('canvas-patient-vaccino');
-          clearCanvas('canvas-doctor');
-        } else {
-          if (vaccinoSigs) vaccinoSigs.classList.remove('hidden');
-        }
+        if (vaccinoSigs) vaccinoSigs.classList.remove('hidden');
       }
       setTimeout(() => resizeAllCanvases(), 50);
     }
@@ -1160,11 +1189,19 @@ function setConsentChoice(type, choice) {
         ? `<span class="text-emerald-700 font-extrabold">✓ ACCONSENTE</span>`
         : `<span class="text-rose-600 font-extrabold">✕ NEGO (Richiesta firma cartacea)</span>`;
 
-      const warningBox = document.getElementById('paper-warning-box');
+const warningBox = document.getElementById('paper-warning-box');
+      const refusalBox = document.getElementById('refusal-warning-box');
+      
       if (consentState.consensoPrivacy === false && consentState.consensoVaccino === true) {
         warningBox.classList.remove('hidden');
       } else {
         warningBox.classList.add('hidden');
+      }
+
+      if (consentState.consensoVaccino === false) {
+        if (refusalBox) refusalBox.classList.remove('hidden');
+      } else {
+        if (refusalBox) refusalBox.classList.add('hidden');
       }
 
       const html = `
@@ -1481,12 +1518,9 @@ const formData = {
           firmaMedico: canvasStates['canvas-doctor'] ? document.getElementById('canvas-doctor').toDataURL('image/png') : ''
         };
 
-        const res = await runServerFunction('submitConsentForm', formData);
+const res = await runServerFunction('submitConsentForm', formData);
 
         if (res && res.status === 'success') {
-if (res.isPaperRequired) {
-            alert("⚠️ ATTENZIONE PER IL MEDICO:\n\nGDPR/Firma Digitale NEGATO.\nLa dose è stata scalata dal magazzino, ma è OBBLIGATORIO far firmare il MODULO CARTACEO al paziente.");
-          }
           showToast(res.message || "Scheda salvata con successo!");
           // Rimanda al modulo iniziale (la funzione switchAppTab si occuperà in automatico di resettare i campi)
           switchAppTab('modulo');

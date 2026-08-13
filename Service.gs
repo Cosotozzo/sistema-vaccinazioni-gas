@@ -44,11 +44,12 @@ const tsIdx = headers.findIndex(h => h.includes('timestamp') || h.includes('data
   const dobIdx = headers.findIndex(h => h.includes('datanascita') || h.includes('nascita'));
   const vacIdx = headers.findIndex(h => h.includes('denominazionevaccino') || h.includes('vaccino'));
   const lottoIdx = headers.findIndex(h => h.includes('numerolotto') || h.includes('lotto'));
-  const consensoIdx = headers.findIndex(h => h.includes('consensosomministrazione') || h.includes('consensovaccino'));
+const consensoIdx = headers.findIndex(h => h.includes('consensosomministrazione') || h.includes('consensovaccino'));
   const gdprIdx = headers.findIndex(h => h.includes('consensoprivacy') || h.includes('gdpr'));
   const pdfIdx = headers.findIndex(h => h.includes('pdfurl') || h.includes('pdf'));
+  const sarIdx = headers.findIndex(h => h.includes('sarlazio') || h.includes('sar'));
 
-  return data.map(row => {
+  return data.map((row, index) => {
     const rawTs = row[tsIdx];
     let giorno = '-';
     let orario = '-';
@@ -67,9 +68,10 @@ const valConsenso = String(row[consensoIdx] || '').toLowerCase().trim();
     const haConsenso = valConsenso.includes('sì') || valConsenso.includes('si') || valConsenso.includes('acconsente');
                        
     const valGdpr = String(row[gdprIdx] || '').toLowerCase().trim();
-    const haGdpr = valGdpr.includes('sì') || valGdpr.includes('si') || valGdpr.includes('acconsente');
+const haGdpr = valGdpr.includes('sì') || valGdpr.includes('si') || valGdpr.includes('acconsente');
 
     return {
+      rowIndex: index + 2,
       giorno: giorno,
       orario: orario,
       isoDate: isoDate,
@@ -78,10 +80,10 @@ const valConsenso = String(row[consensoIdx] || '').toLowerCase().trim();
       codiceFiscale: row[cfIdx] || '',
       dataNascita: formatDateOnly(row[dobIdx]),
       denominazioneVaccino: haConsenso ? (row[vacIdx] || '') : '',
-      numeroLotto: haConsenso ? (row[lottoIdx] || 'N/D') : '',
-      consenso: haConsenso ? 'Sì' : 'No',
+consenso: haConsenso ? 'Sì' : 'No',
       gdpr: haGdpr ? 'Sì' : 'No',
-      pdfUrl: row[pdfIdx] || ''
+      pdfUrl: row[pdfIdx] || '',
+      sarLazio: sarIdx !== -1 && String(row[sarIdx]).trim().toLowerCase() === 'sì' ? 'Sì' : 'No'
     };
   }).reverse();
 }
@@ -323,4 +325,18 @@ function logAction(user, action) {
   }
   const now = new Date();
   sheet.appendRow([now.toLocaleDateString('it-IT'), now.toLocaleTimeString('it-IT'), user, action]);
+}
+
+// Gestisce il click (Toggle) sullo stato SAR Lazio
+function toggleSarLazioStatus(rowIndex, currentStatus) {
+  const sheet = getDb().getSheetByName(SHEET_CONSENSI);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+  const sarIdx = headers.findIndex(h => h.includes('sarlazio') || h.includes('sar'));
+  
+  if (sarIdx === -1) return { success: false, message: 'Colonna "SAR Lazio" non trovata nel database.' };
+  
+  const newStatus = currentStatus === 'Sì' ? '' : 'Sì';
+  sheet.getRange(rowIndex, sarIdx + 1).setValue(newStatus);
+  
+  return { success: true, newStatus: newStatus };
 }
