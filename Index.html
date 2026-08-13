@@ -223,27 +223,27 @@
         <div class="max-w-4xl mx-auto flex justify-between items-center text-xs font-bold min-w-[500px]">
           <div id="step-indicator-1" class="step-node flex items-center gap-1.5 text-sky-600">
             <span class="w-7 h-7 rounded-full bg-sky-600 text-white flex items-center justify-center font-black text-xs">1</span>
-            <span>Paziente</span>
+            <span>Ricerca Paziente</span>
           </div>
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-2" class="step-node flex items-center gap-1.5 text-slate-400">
             <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">2</span>
-            <span>Vaccino</span>
+            <span>Selezione Vaccino</span>
           </div>
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-3" class="step-node flex items-center gap-1.5 text-slate-400">
             <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">3</span>
-            <span>GDPR</span>
+            <span>G.D.P.R. e Firma Digitale</span>
           </div>
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-4" class="step-node flex items-center gap-1.5 text-slate-400">
             <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">4</span>
-            <span>Consenso</span>
+            <span>Consenso Vaccinale</span>
           </div>
           <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
           <div id="step-indicator-5" class="step-node flex items-center gap-1.5 text-slate-400">
             <span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-black text-xs">5</span>
-            <span>Conferma</span>
+            <span>Riepilogo e Conferma</span>
           </div>
         </div>
       </div>
@@ -404,20 +404,20 @@
           </button>
         </div>
 
-      </div>
+<!-- Toolbar del Wizard Dinamica (Spostata DENTRO l'area scorrevole) -->
+        <div id="wizard-sticky-toolbar" class="mt-6 bg-white/50 backdrop-blur-md border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-sm flex justify-between items-center w-full">
+          <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-5 sm:px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl text-sm hidden">
+            ← Indietro
+          </button>
+          <div class="flex-grow"></div>
+          <button id="btn-next-step" onclick="changeStep(1)" class="btn-touch px-6 sm:px-8 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl text-sm shadow-lg shadow-sky-600/20">
+            Avanti →
+          </button>
+        </div>
 
-      <!-- Sticky Toolbar del Wizard -->
-      <div id="wizard-sticky-toolbar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 sm:p-4 z-30 shadow-2xl flex justify-between items-center max-w-4xl mx-auto">
-        <button id="btn-prev-step" onclick="changeStep(-1)" class="btn-touch px-5 sm:px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl text-sm hidden">
-          ← Indietro
-        </button>
-        <div class="flex-grow"></div>
-        <button id="btn-next-step" onclick="changeStep(1)" class="btn-touch px-6 sm:px-8 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl text-sm shadow-lg shadow-sky-600/20">
-          Avanti →
-        </button>
-      </div>
+      </div> <!-- Chiusura Area Contenuto Wizard Scorrevole -->
 
-    </div>
+    </div> <!-- Chiusura VISTA MODULO VACCINALE -->
 
     <!-- VISTA GESTIONE LOTTI -->
     <div id="view-gestione-lotti" class="hidden p-4 sm:p-6 max-w-5xl mx-auto w-full flex-grow overflow-y-auto space-y-6">
@@ -668,10 +668,21 @@ function showToast(text, type = 'success') {
       const bgColor = type === 'error' ? "linear-gradient(to right, #f43f5e, #e11d48)" : "linear-gradient(to right, #0ea5e9, #0284c7)";
       Toastify({
         text: text,
-        duration: 4000,
+        duration: 3000,
         gravity: "top",
-        position: "center",
-        style: { background: bgColor, borderRadius: "16px", padding: "14px 20px", fontSize: "1rem", fontWeight: "600", marginTop: "20px" }
+        position: "right",
+        close: true,
+        stopOnFocus: true,
+        style: { 
+          background: bgColor, 
+          borderRadius: "12px", 
+          padding: "14px 20px", 
+          fontSize: "1rem", 
+          fontWeight: "600", 
+          marginTop: "75px", // Aumentato da 15px a 75px per scendere sotto l'header
+          marginRight: "15px",
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+        }
       }).showToast();
     }
 
@@ -1049,19 +1060,19 @@ const filtered = reportDataCache.filter(item => {
       if (currentStep === 2) {
         const vSelect = document.getElementById('vaccine-select').value;
         if (vSelect === "") {
-          showToast("Seleziona un vaccino disponibile", "error");
+          showToast("Seleziona un vaccino", "error");
           return false;
         }
       }
       if (currentStep === 3) {
         if (consentState.consensoPrivacy === null) {
-          showToast("Devi selezionare ACCONSENTO o NEGO per la privacy/biometria", "error");
+          showToast("E' necessario selezionare ACCONSENTO o NEGO per la privacy/biometria", "error");
           return false;
         }
       }
       if (currentStep === 4) {
         if (consentState.consensoVaccino === null) {
-          showToast("Devi selezionare ACCONSENTO o NEGO per il vaccino per proseguire", "error");
+          showToast("E' necessario selezionare ACCONSENTO o NEGO per il consenso vaccinale al fine di proseguire", "error");
           return false;
         }
       }
