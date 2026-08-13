@@ -67,7 +67,7 @@ const folder = folderIter.hasNext() ? folderIter.next() : DriveApp.createFolder(
       isPaperRequired: isPaperRequired,
       message: isPaperRequired 
         ? "Dose scalata dal magazzino. NECESSARIA FIRMA SU MODULO CARTACEO." 
-        : "Operazione completata e registrata con successo."
+        : "Operazione completata e salvata con successo, l'esito è possibile visualizzarlo nella sezione Report Consensi."
     };
 
   } catch (error) {
