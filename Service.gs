@@ -77,10 +77,11 @@ const haGdpr = valGdpr.includes('sì') || valGdpr.includes('si') || valGdpr.incl
       isoDate: isoDate,
       cognome: row[cognomeIdx] || '',
       nome: row[nomeIdx] || '',
-      codiceFiscale: row[cfIdx] || '',
+codiceFiscale: row[cfIdx] || '',
       dataNascita: formatDateOnly(row[dobIdx]),
       denominazioneVaccino: haConsenso ? (row[vacIdx] || '') : '',
-consenso: haConsenso ? 'Sì' : 'No',
+      numeroLotto: haConsenso ? (row[lottoIdx] || '') : '',
+      consenso: haConsenso ? 'Sì' : 'No',
       gdpr: haGdpr ? 'Sì' : 'No',
       pdfUrl: row[pdfIdx] || '',
       sarLazio: sarIdx !== -1 && String(row[sarIdx]).trim().toLowerCase() === 'sì' ? 'Sì' : 'No'

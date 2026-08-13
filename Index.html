@@ -1015,12 +1015,11 @@ const filtered = reportDataCache.filter(item => {
       document.getElementById('report-filter-vaccine').value = '';
       document.getElementById('report-filter-esito').value = '';
       document.getElementById('report-filter-gdpr').value = '';
-      applyReportFilters();
+applyReportFilters();
     }
 
     function renderReportTable(dataList) {
       const tbody = document.getElementById('report-consensi-tbody');
-const tbody = document.getElementById('report-consensi-tbody');
       if (!dataList || dataList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 italic">Nessun record trovato con i filtri selezionati.</td></tr>`;
         return;
