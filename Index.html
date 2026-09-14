@@ -732,9 +732,20 @@ button, .btn-touch, input, select {
 
     function runServerFunction(functionName, ...args) {
       return new Promise((resolve, reject) => {
+// Timeout di sicurezza impostato a 40 secondi per evitare freeze dell'interfaccia
+        const timer = setTimeout(() => {
+          reject(new Error("Il server ha impiegato troppo tempo a rispondere. Verifica la connessione o i permessi di Drive."));
+        }, 40000);
+
         google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(reject)[functionName](...args);
+          .withSuccessHandler(res => {
+            clearTimeout(timer);
+            resolve(res);
+          })
+          .withFailureHandler(err => {
+            clearTimeout(timer);
+            reject(err);
+          })[functionName](...args);
       });
     }
 
@@ -1602,8 +1613,24 @@ function draw(e) {
     }
 
     async function submitConsent() {
+// Ridimensiona ed esporta la firma in un formato compatto per non appesantire la chiamata al server
+    function getOptimizedSignature(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !canvasStates[canvasId]) return '';
+      const targetW = 340;
+      const targetH = Math.round(canvas.height * (targetW / canvas.width));
+      const offscreen = document.createElement('canvas');
+      offscreen.width = targetW;
+      offscreen.height = targetH;
+      const ctx = offscreen.getContext('2d');
+      ctx.drawImage(canvas, 0, 0, targetW, targetH);
+      return offscreen.toDataURL('image/png');
+    }
+
+    async function submitConsent() {
       const btn = document.getElementById('btn-submit-consent');
-      btn.innerText = "Salvataggio in corso...";
+      const originalText = "Conferma e Salva Scheda";
+      btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generazione PDF in corso...`;
       btn.disabled = true;
 
       try {
@@ -1614,7 +1641,7 @@ function draw(e) {
           ? availableVaccines[vSelect] 
           : { denominazione: 'Non specificato', lotto: 'N/D' };
 
-const formData = {
+        const formData = {
           cognome: selectedPatient.cognome || '',
           nome: selectedPatient.nome || '',
           codicefiscale: selectedPatient.codicefiscale || '',
@@ -1630,19 +1657,18 @@ const formData = {
           luogoVaccinazione: document.getElementById('vaccine-location').value || 'AMBULATORIO',
           consensoPrivacy: consentState.consensoPrivacy ? 'Acconsente' : 'Non acconsente',
           consensoVaccino: consentState.consensoVaccino ? 'Acconsente' : 'Non acconsente',
-          firmaPazienteBiometrico: canvasStates['canvas-patient-biometrico'] ? document.getElementById('canvas-patient-biometrico').toDataURL('image/png') : '',
-          firmaPazienteVaccino: canvasStates['canvas-patient-vaccino'] ? document.getElementById('canvas-patient-vaccino').toDataURL('image/png') : '',
-          firmaMedico: canvasStates['canvas-doctor'] ? document.getElementById('canvas-doctor').toDataURL('image/png') : ''
+          firmaPazienteBiometrico: getOptimizedSignature('canvas-patient-biometrico'),
+          firmaPazienteVaccino: getOptimizedSignature('canvas-patient-vaccino'),
+          firmaMedico: getOptimizedSignature('canvas-doctor')
         };
 
-const res = await runServerFunction('submitConsentForm', formData);
+        const res = await runServerFunction('submitConsentForm', formData);
 
         if (res && res.status === 'success') {
           showToast(res.message || "Scheda salvata con successo!");
           if (res.isPaperRequired) {
-          document.getElementById('modal-paper-warning').classList.remove('hidden');
-        }
-          // Rimanda al modulo iniziale (la funzione switchAppTab si occuperà in automatico di resettare i campi)
+            document.getElementById('modal-paper-warning').classList.remove('hidden');
+          }
           switchAppTab('modulo');
         } else {
           throw new Error(res ? res.message : "Errore durante il salvataggio");
@@ -1651,7 +1677,7 @@ const res = await runServerFunction('submitConsentForm', formData);
         console.error(err);
         showToast(`Errore: ${err.message || err}`, "error");
       } finally {
-        btn.innerText = "Conferma e Salva Scheda";
+        btn.innerHTML = originalText;
         btn.disabled = false;
       }
     }
