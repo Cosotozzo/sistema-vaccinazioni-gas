@@ -333,10 +333,11 @@ function toggleSarLazioStatus(rowIndex, currentStatus) {
   const sheet = getDb().getSheetByName(SHEET_CONSENSI);
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
   const sarIdx = headers.findIndex(h => h.includes('sarlazio') || h.includes('sar'));
-  
+    
   if (sarIdx === -1) return { success: false, message: 'Colonna "SAR Lazio" non trovata nel database.' };
   
-  const newStatus = currentStatus === 'Sì' ? '' : 'Sì';
+const cleanStatus = String(currentStatus || '').trim().toLowerCase();
+  const newStatus = (cleanStatus === 'sì' || cleanStatus === 's ' || cleanStatus === 'si') ? 'No' : 'Sì';
   sheet.getRange(rowIndex, sarIdx + 1).setValue(newStatus);
   
   return { success: true, newStatus: newStatus };
