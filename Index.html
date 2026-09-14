@@ -985,9 +985,10 @@ function resetModuloWizard() {
       const dateFrom = document.getElementById('report-filter-date-from')?.value || '';
       const dateTo = document.getElementById('report-filter-date-to')?.value || '';
       const searchTerms = (document.getElementById('report-filter-search')?.value || '').toLowerCase().trim().split(' ').filter(w => w.length > 0);
-      const selectedVaccine = (document.getElementById('report-filter-vaccine')?.value || '').toLowerCase().trim();
+const selectedVaccine = (document.getElementById('report-filter-vaccine')?.value || '').toLowerCase().trim();
       const selectedEsito = document.getElementById('report-filter-esito')?.value || '';
       const selectedGdpr = document.getElementById('report-filter-gdpr')?.value || '';
+      const selectedSar = document.getElementById('report-filter-sar')?.value || ''; // <-- Riga aggiunta
 
 const filtered = reportDataCache.filter(item => {
         if (dateFrom && (!item.isoDate || item.isoDate < dateFrom)) return false;
@@ -1012,10 +1013,10 @@ const filtered = reportDataCache.filter(item => {
     function resetReportFilters() {
       document.getElementById('report-filter-date-from').value = '';
       document.getElementById('report-filter-date-to').value = '';
-      document.getElementById('report-filter-search').value = '';
+document.getElementById('report-filter-search').value = '';
       document.getElementById('report-filter-vaccine').value = '';
       document.getElementById('report-filter-esito').value = '';
-      document.getElementById('report-filter-gdpr').value = '';
+      if (document.getElementById('report-filter-gdpr')) document.getElementById('report-filter-gdpr').value = ''; // <-- Controllo di sicurezza aggiunto
       document.getElementById('report-filter-sar').value = '';
 applyReportFilters();
     }
