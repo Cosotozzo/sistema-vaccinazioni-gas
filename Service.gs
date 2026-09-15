@@ -60,19 +60,19 @@ const consensoIdx = headers.findIndex(h => h.includes('consensosomministrazione'
       if (!isNaN(d.getTime())) {
         giorno = Utilities.formatDate(d, Session.getScriptTimeZone(), 'dd/MM/yyyy');
         orario = Utilities.formatDate(d, Session.getScriptTimeZone(), 'HH:mm');
-        isoDate = Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-      }
-    }
+isoDate = Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+         }
+         }
 
-const valConsenso = String(row[consensoIdx] || '').toLowerCase().trim();
-    const haConsenso = valConsenso.includes('sì') || valConsenso.includes('si') || valConsenso.includes('acconsente');
-                       
-    const valGdpr = String(row[gdprIdx] || '').toLowerCase().trim();
-const haGdpr = valGdpr.includes('sì') || valGdpr.includes('si') || valGdpr.includes('acconsente');
+        const valConsenso = String(row[consensoIdx] || '').toLowerCase().trim();
+         const haConsenso = valConsenso === 'sì' || valConsenso === 'si' || valConsenso === 'acconsente';
+         
+        const valGdpr = String(row[gdprIdx] || '').toLowerCase().trim();
+        const haGdpr = valGdpr === 'sì' || valGdpr === 'si' || valGdpr === 'acconsente';
 
-    return {
-      rowIndex: index + 2,
-      giorno: giorno,
+         return {
+         rowIndex: index + 2,
+         giorno: giorno,
       orario: orario,
       isoDate: isoDate,
       cognome: row[cognomeIdx] || '',
@@ -91,15 +91,15 @@ codiceFiscale: row[cfIdx] || '',
 
 // Restituisce SOLO i vaccini disponibili con almeno 1 dose per la compilazione del modulo
 function getVaccineData() {
-  const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  if (!sheet) return [];
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return [];
-  
-  const headers = data.shift().map(h => String(h || '').toLowerCase().trim());
-  const denominazioneIdx = headers.indexOf('denominazionevaccino');
-  const lottoIdx = headers.indexOf('numerolotto');
-  const statoIdx = headers.indexOf('stato');
+const sheet = getDb().getSheetByName(SHEET_VACCINI);
+ if (!sheet) return [];
+ const data = sheet.getDataRange().getValues();
+ if (data.length < 2) return [];
+ 
+const headers = data.shift().map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+ const denominazioneIdx = headers.indexOf('denominazionevaccino');
+ const lottoIdx = headers.indexOf('numerolotto');
+ const statoIdx = headers.indexOf('stato');
   const dosiIdx = headers.indexOf('dosidisponibili');
 
   return data
@@ -117,15 +117,15 @@ function getVaccineData() {
 
 // Restituisce TUTTI i vaccini per la tabella di gestione
 function getAllVaccinesForManagement() {
-  const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  if (!sheet) return [];
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return [];
+const sheet = getDb().getSheetByName(SHEET_VACCINI);
+ if (!sheet) return [];
+ const data = sheet.getDataRange().getValues();
+ if (data.length < 2) return [];
 
-  const headers = data.shift().map(h => String(h || '').toLowerCase().trim());
-  const denominazioneIdx = headers.indexOf('denominazionevaccino');
-  const lottoIdx = headers.indexOf('numerolotto');
-  const statoIdx = headers.indexOf('stato');
+ const headers = data.shift().map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+ const denominazioneIdx = headers.indexOf('denominazionevaccino');
+ const lottoIdx = headers.indexOf('numerolotto');
+ const statoIdx = headers.indexOf('stato');
   const dosiIdx = headers.indexOf('dosidisponibili');
 
   return data.map((row, index) => ({
@@ -155,16 +155,16 @@ function addVaccineBatch(denominazione, lotto, dosi) {
 // Aggiornamento puntuale delle dosi con ripristino o chiusura automatica dello stato
 function updateVaccineQuantity(rowIndex, newQuantity) {
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  if (rowIndex < 2 || rowIndex > sheet.getLastRow()) {
-    return { success: false, message: 'Indice riga non valido.' };
-  }
+if (rowIndex < 2 || rowIndex > sheet.getLastRow()) {
+ return { success: false, message: 'Indice riga non valido.' };
+ }
 
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
-    .map(h => String(h || '').toLowerCase().trim());
-  const dosiIdx = headers.indexOf('dosidisponibili');
-  const statoIdx = headers.indexOf('stato');
+ const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+ .map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+ const dosiIdx = headers.indexOf('dosidisponibili');
+ const statoIdx = headers.indexOf('stato');
 
-  if (dosiIdx === -1) return { success: false, message: 'Colonna DosiDisponibili non trovata.' };
+ if (dosiIdx === -1) return { success: false, message: 'Colonna DosiDisponibili non trovata.' };
 
   const qty = parseInt(newQuantity, 10);
   if (isNaN(qty) || qty < 0) {
@@ -190,14 +190,14 @@ function updateVaccineQuantity(rowIndex, newQuantity) {
 // Decremento automatico di 1 dose post-somministrazione
 function decrementVaccineDose(denominazione, lotto) {
   const sheet = getDb().getSheetByName(SHEET_VACCINI);
-  if (!sheet) return;
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return;
+if (!sheet) return;
+ const data = sheet.getDataRange().getValues();
+ if (data.length < 2) return;
 
-  const headers = data[0].map(h => String(h || '').toLowerCase().trim());
-  const denIdx = headers.indexOf('denominazionevaccino');
-  const lottoIdx = headers.indexOf('numerolotto');
-  const dosiIdx = headers.indexOf('dosidisponibili');
+ const headers = data[0].map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+ const denIdx = headers.indexOf('denominazionevaccino');
+ const lottoIdx = headers.indexOf('numerolotto');
+ const dosiIdx = headers.indexOf('dosidisponibili');
   const statoIdx = headers.indexOf('stato');
 
   if (denIdx === -1 || lottoIdx === -1 || dosiIdx === -1) return;
@@ -271,17 +271,17 @@ for (let i = 0; i < patientRows.length; i += CHUNK_SIZE) {
     }
     chunks[CACHE_KEY_COUNT] = count.toString();
     chunks[CACHE_KEY_HEADER] = JSON.stringify(headerRow);
-    cache.putAll(chunks, 300); 
-    data = [headerRow].concat(patientRows);
-  }
+cache.putAll(chunks, 300); 
+data = [headerRow].concat(patientRows);
+ }
 
-  if (data.length === 0) return [];
-  
-  const headers = data[0].map(h => String(h || '').toLowerCase().trim());
-  const searchWords = searchTerm.toLowerCase().trim().split(' ').filter(w => w.length > 0);
+ if (data.length === 0) return [];
+ 
+const headers = data[0].map(h => String(h || '').toLowerCase().trim().replace(/\s+/g, ''));
+ const searchWords = searchTerm.toLowerCase().trim().split(' ').filter(w => w.length > 0);
 
-  const cfIdx = headers.indexOf('codicefiscale');
-  const cognomeIdx = headers.indexOf('cognome');
+ const cfIdx = headers.indexOf('codicefiscale');
+ const cognomeIdx = headers.indexOf('cognome');
   const nomeIdx = headers.indexOf('nome');
 
   if (cfIdx === -1 || cognomeIdx === -1 || nomeIdx === -1) return [];
@@ -301,17 +301,18 @@ for (let i = 0; i < patientRows.length; i += CHUNK_SIZE) {
       patientTerms.some(pTerm => pTerm.startsWith(sWord))
     );
 
-    if (isMatch) {
-      let patientObj = {};
-      headers.forEach((hKey, idx) => { 
-        let rawVal = row[idx];
-        if (hKey === 'datanascita' || rawVal instanceof Date) {
-          rawVal = formatDateOnly(rawVal);
-        }
-        patientObj[hKey] = rawVal; 
-      });
-      suggestions.push(patientObj);
-      if (suggestions.length >= 10) break;
+if (isMatch) {
+ let patientObj = {};
+ headers.forEach((hKey, idx) => { 
+let rawVal = row[idx];
+ const cleanKey = hKey.replace(/\s+/g, '');
+ if (cleanKey === 'datanascita' || rawVal instanceof Date) {
+ rawVal = formatDateOnly(rawVal);
+ }
+ patientObj[cleanKey] = rawVal; 
+});
+ suggestions.push(patientObj);
+ if (suggestions.length >= 10) break;
     }
   }
   return suggestions;

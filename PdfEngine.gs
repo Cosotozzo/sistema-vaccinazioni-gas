@@ -80,16 +80,17 @@ function createPdfHtml(data) {
     ? 'ACCONSENTE AD ESSERE SOTTOPOSTO/A ALLA VACCINAZIONE' 
     : 'NON ACCONSENTE AD ESSERE SOTTOPOSTO/A ALLA VACCINAZIONE';
     
-  const consensoPrivacyText = data.consensoPrivacy === 'Acconsente'
-    ? 'ACCONSENTE al trattamento dei dati personali e biometrici'
-    : 'NON ACCONSENTE al trattamento dei dati personali e biometrici';
+const consensoPrivacyText = data.consensoPrivacy === 'Acconsente'
+ ? 'ACCONSENTE al trattamento dei dati personali e biometrici'
+ : 'NON ACCONSENTE al trattamento dei dati personali e biometrici';
 
-  // Unifichiamo la firma visiva del paziente come nel cartaceo
-  const imgPaziente = data.firmaPazienteVaccino 
-    ? `<img src="${data.firmaPazienteVaccino}" style="height: 50px; max-width: 100%; object-fit: contain;" />` 
-    : `<div style="height: 50px; line-height: 50px; font-size: 8pt; color: #94a3b8; font-style: italic;">[Firma Non Presente]</div>`;
+ // Unifichiamo la firma visiva del paziente come nel cartaceo con fallback
+ const firmaEffettiva = data.firmaPazienteVaccino || data.firmaPazienteBiometrico;
+ const imgPaziente = firmaEffettiva 
+? `<img src="${firmaEffettiva}" style="height: 50px; max-width: 100%; object-fit: contain;" />` 
+: `<div style="height: 50px; line-height: 50px; font-size: 8pt; color: #94a3b8; font-style: italic;">[Firma Non Presente]</div>`;
 
-  const imgMedico = data.firmaMedico 
+ const imgMedico = data.firmaMedico
     ? `<img src="${data.firmaMedico}" style="height: 50px; max-width: 100%; object-fit: contain;" />` 
     : `<div style="height: 50px; line-height: 50px; font-size: 8pt; color: #94a3b8; font-style: italic;">[Firma Non Presente]</div>`;
 
@@ -183,13 +184,13 @@ function createPdfHtml(data) {
             <div class="signature-title">Firma dell'Operatore Sanitario</div>
             ${imgMedico}
           </td>
-        </tr>
-        <tr>
-          <td width="50%" align="left" style="padding-top: 15px;">
-            <span class="label">Data sottoscrizione:</span> <span class="value">${new Date().toLocaleDateString('it-IT')}</span>
-          </td>
-          <td width="50%" align="center" style="padding-top: 15px;">
-            <span class="label">Dott.ssa Arianna Baroni</span><br>
+</tr>
+ <tr>
+ <td width="50%" align="left" style="padding-top: 15px;">
+ <span class="label">Data sottoscrizione:</span> <span class="value">${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy')}</span>
+ </td>
+ <td width="50%" align="center" style="padding-top: 15px;">
+ <span class="label">Dott.ssa Arianna Baroni</span><br>
             Medico Chirurgo<br>
             062778 G/RM2
           </td>

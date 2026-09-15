@@ -604,13 +604,13 @@ button, .btn-touch, input, select {
           </div>
 
 <div>
-            <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Consenso G.D.P.R.</label>
-            <select id="report-filter-gdpr" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
-              <option value="">-- Tutti --</option>
-              <option value="S ">Acconsentito</option>
-              <option value="No">Negato</option>
-            </select>
-          </div>
+ <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Consenso G.D.P.R.</label>
+ <select id="report-filter-gdpr" onchange="applyReportFilters()" class="w-full px-3 py-2 border-2 border-sky-200 rounded-xl focus:border-sky-500 outline-none bg-white text-xs sm:text-sm font-medium">
+ <option value="">-- Tutti --</option>
+ <option value="Sì">Acconsentito</option>
+ <option value="No">Negato</option>
+ </select>
+ </div>
 
 <div>
             <label class="block text-xs font-extrabold mb-1 text-sky-900 uppercase">Stato SAR Lazio</label>
@@ -728,7 +728,22 @@ button, .btn-touch, input, select {
       }
     }
 
-    document.addEventListener('DOMContentLoaded', checkExistingSession);
+ document.addEventListener('DOMContentLoaded', () => {
+  // 1. Verifica se esiste già una sessione attiva salvata
+  checkExistingSession();
+
+  // 2. Funzione per intercettare il tasto Invio (Enter)
+  const onEnterPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleLogin();
+    }
+  };
+
+  // 3. Collega il tasto Invio ai campi Email e Password del login
+  document.getElementById('login-email')?.addEventListener('keydown', onEnterPress);
+  document.getElementById('login-password')?.addEventListener('keydown', onEnterPress);
+});
 
     function runServerFunction(functionName, ...args) {
       return new Promise((resolve, reject) => {
@@ -795,23 +810,24 @@ function showToast(text, type = 'success') {
       document.getElementById(sectionId).classList.remove('hidden');
     }
 
-    function checkPasswordRules() {
-      const pass = document.getElementById('reg-password').value;
-      const confirmPass = document.getElementById('reg-confirm-password').value;
+function checkPasswordRules() {
+  const pass = document.getElementById('reg-password').value;
+  const confirmPass = document.getElementById('reg-confirm-password').value;
 
-      const isLongEnough = pass.length >= 8;
-      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(pass);
-      const numbersCount = (pass.match(/\d/g) || []).length;
-      const hasTwoNumbers = numbersCount >= 2;
-      const matches = pass.length > 0 && pass === confirmPass;
+  const isLongEnough = pass.length >= 8;
+  // Qualsiasi carattere che NON sia lettera o numero
+  const hasSpecial = /[^a-zA-Z0-9]/.test(pass);
+  const numbersCount = (pass.match(/\d/g) || []).length;
+  const hasTwoNumbers = numbersCount >= 2;
+  const matches = pass.length > 0 && pass === confirmPass;
 
-      updateRuleDisplay('rule-length', isLongEnough);
-      updateRuleDisplay('rule-special', hasSpecial);
-      updateRuleDisplay('rule-numbers', hasTwoNumbers);
-      updateRuleDisplay('rule-match', matches);
+  updateRuleDisplay('rule-length', isLongEnough);
+  updateRuleDisplay('rule-special', hasSpecial);
+  updateRuleDisplay('rule-numbers', hasTwoNumbers);
+  updateRuleDisplay('rule-match', matches);
 
-      return isLongEnough && hasSpecial && hasTwoNumbers && matches;
-    }
+  return isLongEnough && hasSpecial && hasTwoNumbers && matches;
+}
 
     function updateRuleDisplay(elementId, isValid) {
       const el = document.getElementById(elementId);
@@ -943,11 +959,15 @@ icon.innerText = "✔";
     }
 
 function resetModuloWizard() {
-      currentStep = 1;
-      clearPatientSelection();
-      clearCanvas('canvas-patient-vaccino');
-      clearCanvas('canvas-patient-biometrico');
-      clearCanvas('canvas-doctor');
+ currentStep = 1;
+ clearPatientSelection();
+ const vSelect = document.getElementById('vaccine-select');
+ if (vSelect) vSelect.value = '';
+ const vLotto = document.getElementById('vaccine-lotto');
+ if (vLotto) vLotto.value = '';
+ clearCanvas('canvas-patient-vaccino');
+ clearCanvas('canvas-patient-biometrico');
+ clearCanvas('canvas-doctor');
       consentState = { consensoVaccino: null, consensoPrivacy: null };
       
       const btnVaccinoYes = document.getElementById('btn-vaccino-yes');
@@ -1315,14 +1335,14 @@ const warningBox = document.getElementById('paper-warning-box');
         if (refusalBox) refusalBox.classList.remove('hidden');
       } else {
         if (refusalBox) refusalBox.classList.add('hidden');
-      }
+}
 
-      const html = `
-        <div class="font-bold text-sm sm:text-base text-sky-900 border-b border-sky-200 pb-2 mb-2">Riepilogo Scheda Vaccinale</div>
-        <p><strong>Paziente:</strong> ${selectedPatient ? `${selectedPatient.cognome} ${selectedPatient.nome} (CF: ${selectedPatient.codicefiscale})` : 'Non selezionato'}</p>
-        <p><strong>Vaccino:</strong> ${vData.denominazione} | <strong>Lotto:</strong> ${vData.lotto}</p>
-        <p><strong>Luogo:</strong> ${document.getElementById('vaccine-location').value}</p>
-        <p><strong>Consenso G.D.P.R. & Firma Digitale Semplificata</strong> ${privacyStatusHtml}</p>
+ const html = `
+ <div class="font-bold text-sm sm:text-base text-sky-900 border-b border-sky-200 pb-2 mb-2">Riepilogo Scheda Vaccinale</div>
+ <p><strong>Paziente:</strong> ${selectedPatient ? (selectedPatient.cognome + ' ' + selectedPatient.nome + ' (CF: ' + selectedPatient.codicefiscale + ')') : 'Non selezionato'}</p>
+ <p><strong>Vaccino:</strong> ${vData.denominazione} | <strong>Lotto:</strong> ${vData.lotto}</p>
+ <p><strong>Luogo:</strong> ${document.getElementById('vaccine-location').value}</p>
+ <p><strong>Consenso G.D.P.R. & Firma Digitale Semplificata</strong> ${privacyStatusHtml}</p>
         <p><strong>Consenso Vaccinazione:</strong> ${vaccinoStatusHtml}</p>
       `;
       document.getElementById('summary-content').innerHTML = html;
@@ -1594,93 +1614,93 @@ function draw(e) {
 
       function stopDraw() { isDrawing = false; }
 
-      canvas.addEventListener('mousedown', startDraw);
-      canvas.addEventListener('mousemove', draw);
-      canvas.addEventListener('mouseup', stopDraw);
-      
-      canvas.addEventListener('touchstart', startDraw, { passive: false });
-      canvas.addEventListener('touchmove', draw, { passive: false });
-      canvas.addEventListener('touchend', stopDraw);
+canvas.addEventListener('mousedown', startDraw);
+ canvas.addEventListener('mousemove', draw);
+ canvas.addEventListener('mouseup', stopDraw);
+ canvas.addEventListener('mouseleave', stopDraw);
+ 
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+ canvas.addEventListener('touchmove', draw, { passive: false });
+ canvas.addEventListener('touchend', stopDraw);
     }
 
     function clearCanvas(canvasId) {
       const canvas = document.getElementById(canvasId);
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      canvasStates[canvasId] = false;
-      const badge = document.getElementById(`badge-sig-${canvasId}`);
-      if (badge) badge.classList.add('hidden');
-    }
+canvasStates[canvasId] = false;
+         const badge = document.getElementById(`badge-sig-${canvasId}`);
+         if (badge) badge.classList.add('hidden');
+         }
 
-    async function submitConsent() {
-// Ridimensiona ed esporta la firma in un formato compatto per non appesantire la chiamata al server
-    function getOptimizedSignature(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas || !canvasStates[canvasId]) return '';
-      const targetW = 340;
-      const targetH = Math.round(canvas.height * (targetW / canvas.width));
-      const offscreen = document.createElement('canvas');
-      offscreen.width = targetW;
-      offscreen.height = targetH;
-      const ctx = offscreen.getContext('2d');
-      ctx.drawImage(canvas, 0, 0, targetW, targetH);
-      return offscreen.toDataURL('image/png');
-    }
+         async function submitConsent() {
+         // Ridimensiona ed esporta la firma in un formato compatto per non appesantire la chiamata al server
+         function getOptimizedSignature(canvasId) {
+         const canvas = document.getElementById(canvasId);
+         if (!canvas || !canvasStates[canvasId]) return '';
+         const targetW = 340;
+         const targetH = Math.round(canvas.height * (targetW / canvas.width));
+         const offscreen = document.createElement('canvas');
+         offscreen.width = targetW;
+         offscreen.height = targetH;
+         const ctx = offscreen.getContext('2d');
+         ctx.drawImage(canvas, 0, 0, targetW, targetH);
+         return offscreen.toDataURL('image/png');
+         }
 
-    async function submitConsent() {
-      const btn = document.getElementById('btn-submit-consent');
-      const originalText = "Conferma e Salva Scheda";
-      btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generazione PDF in corso...`;
-      btn.disabled = true;
+         const btn = document.getElementById('btn-submit-consent');
+         const originalText = "Conferma e Salva Scheda";
+         btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generazione PDF in corso...`;
+         btn.disabled = true;
 
-      try {
-        if (!selectedPatient) throw new Error("Seleziona un paziente prima di salvare");
+         try {
+         if (!selectedPatient) throw new Error("Seleziona un paziente prima di salvare");
 
-        const vSelect = document.getElementById('vaccine-select').value;
-        const vData = (vSelect !== "" && availableVaccines[vSelect]) 
-          ? availableVaccines[vSelect] 
-          : { denominazione: 'Non specificato', lotto: 'N/D' };
+         const vSelect = document.getElementById('vaccine-select').value;
+         const vData = (vSelect !== "" && availableVaccines[vSelect]) 
+         ? availableVaccines[vSelect] 
+         : { denominazione: 'Non specificato', lotto: 'N/D' };
 
-        const formData = {
-          cognome: selectedPatient.cognome || '',
-          nome: selectedPatient.nome || '',
-          codicefiscale: selectedPatient.codicefiscale || '',
-          datanascita: selectedPatient.datanascita || '',
-          sesso: selectedPatient.sesso || '',
-          indirizzo: selectedPatient.indirizzo || '',
-          comune: selectedPatient.comune || '',
-          telefono: selectedPatient.telefono || '',
-          iscrittossr: selectedPatient.iscrittossr || 'S.S.R. LAZIO',
-          residente: selectedPatient.residente || 'NELLA REGIONE LAZIO',
-          vaccinoDenominazione: vData.denominazione || '',
-          vaccinoLotto: vData.lotto || '',
-          luogoVaccinazione: document.getElementById('vaccine-location').value || 'AMBULATORIO',
-          consensoPrivacy: consentState.consensoPrivacy ? 'Acconsente' : 'Non acconsente',
-          consensoVaccino: consentState.consensoVaccino ? 'Acconsente' : 'Non acconsente',
-          firmaPazienteBiometrico: getOptimizedSignature('canvas-patient-biometrico'),
-          firmaPazienteVaccino: getOptimizedSignature('canvas-patient-vaccino'),
-          firmaMedico: getOptimizedSignature('canvas-doctor')
-        };
+         const formData = {
+         cognome: selectedPatient.cognome || '',
+         nome: selectedPatient.nome || '',
+         codicefiscale: selectedPatient.codicefiscale || '',
+         datanascita: selectedPatient.datanascita || '',
+         sesso: selectedPatient.sesso || '',
+         indirizzo: selectedPatient.indirizzo || '',
+         comune: selectedPatient.comune || '',
+         telefono: selectedPatient.telefono || '',
+         iscrittossr: selectedPatient.iscrittossr || 'S.S.R. LAZIO',
+         residente: selectedPatient.residente || 'NELLA REGIONE LAZIO',
+         vaccinoDenominazione: vData.denominazione || '',
+         vaccinoLotto: vData.lotto || '',
+         luogoVaccinazione: document.getElementById('vaccine-location').value || 'AMBULATORIO',
+         consensoPrivacy: consentState.consensoPrivacy ? 'Acconsente' : 'Non acconsente',
+         consensoVaccino: consentState.consensoVaccino ? 'Acconsente' : 'Non acconsente',
+         firmaPazienteBiometrico: getOptimizedSignature('canvas-patient-biometrico'),
+         firmaPazienteVaccino: getOptimizedSignature('canvas-patient-vaccino'),
+         firmaMedico: getOptimizedSignature('canvas-doctor')
+         };
 
-        const res = await runServerFunction('submitConsentForm', formData);
+         const res = await runServerFunction('submitConsentForm', formData);
 
-        if (res && res.status === 'success') {
-          showToast(res.message || "Scheda salvata con successo!");
-          if (res.isPaperRequired) {
-            document.getElementById('modal-paper-warning').classList.remove('hidden');
-          }
-          switchAppTab('modulo');
-        } else {
-          throw new Error(res ? res.message : "Errore durante il salvataggio");
-        }
-      } catch (err) {
-        console.error(err);
-        showToast(`Errore: ${err.message || err}`, "error");
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      }
-    }
-  </script>
-</body>
-</html>
+         if (res && res.status === 'success') {
+         showToast(res.message || "Scheda salvata con successo!");
+         if (res.isPaperRequired) {
+         document.getElementById('modal-paper-warning').classList.remove('hidden');
+         }
+         switchAppTab('modulo');
+         } else {
+         throw new Error(res ? res.message : "Errore durante il salvataggio");
+         }
+         } catch (err) {
+         console.error(err);
+         showToast("Errore: " + (err.message || err), "error");
+         } finally {
+         btn.innerHTML = originalText;
+         btn.disabled = false;
+         }
+         }
+         </script>
+        </body>
+        </html>
